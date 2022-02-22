@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "noEmitOnError":true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "module": "es6",
+    "target": "es2021",
+  },
+  "include": [
+    "src/*"
+  ],
+}
