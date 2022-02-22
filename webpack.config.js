@@ -28,7 +28,7 @@ const config = {
             {
                 test: /\.(ts|tsx)$/i,
                 loader: 'ts-loader',
-                exclude: ['/node_modules/'],
+                exclude: ['/node_modules/', '/opencv-ts/'],
             },
             {
                 test: /\.css$/i,
