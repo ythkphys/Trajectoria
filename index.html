@@ -61,7 +61,7 @@
             <h4 class="page-header my-3">ファイルの選択</h4>
             <div class="row align-items-start">
                 <div class="col-12 col-xxl-6">
-                    <div class="pb-3"><input class="form-control" type="file" id="selectedFile" name="file"/></div>
+                    <div class="pb-3"><input class="form-control" type="file" accept="video/*" id="selectedFile" name="file"/></div>
                     <div class="position-relative">
                         <video id="videoInput" src="" class="figureMax" muted controls playsinline></video>
                         <canvas id="videoCanvas" style ="pointer-events: none;" class="figureMax position-absolute top-0 start-0"></canvas>
@@ -156,7 +156,9 @@
 
         <!--debug-->
         <div class="tab-pane fade" id="debugTab">
-            <h3 class="page-header my-3">デバッグ</h3>
+        
+            
+            <h3 class="page-header my-3">デバッグCanvas</h3>
             <canvas id="canvas0" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
             <canvas id="canvas1" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
             <canvas id="canvas2" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
@@ -166,6 +168,9 @@
             <canvas id="canvas6" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
         </div>
     </div>
+
+    <h3 class="page-header my-3">デバッグMessage</h3>
+    <div id="debugMessage"></div> 
 </div>
 </body>
 </html>

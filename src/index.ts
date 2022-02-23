@@ -2,7 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as bootstrap from "bootstrap";
 import { ImageAnalyzer } from "./imageAnalyzer";
-import { MAX_PICTURE_SIZE} from "./utilities";
+import { MAX_PICTURE_SIZE,debugMsg} from "./utilities";
 import cv, { Mat, Rect} from "../opencv-ts/src/opencv";
 
     
@@ -34,6 +34,7 @@ const rangeInput: { [str: string]: HTMLInputElement } = {};
 const rangeText: { [str: string]: HTMLElement } = {};
 
 window.addEventListener('load', () => {
+    
     document.documentElement.style.setProperty("--max-picture-size", `${MAX_PICTURE_SIZE}px`);
     
     selectedFile = document.getElementById("selectedFile") as HTMLInputElement;
@@ -120,20 +121,31 @@ window.addEventListener('load', () => {
 
     /* InputVideo  */
     selectedFile.addEventListener("change", async (e) => {
-        if (selectedFile.files.length > 0) {
-            if (imageAnalyzer) {
-                imageAnalyzer.dispose();
-                imageAnalyzer = undefined;
-                phase.changeTo(Phase.Initial);
-            }           
-            updateInputVideo();
-            imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, selectedFile.files[0]);
-            if (imageAnalyzer) {
-                await imageAnalyzer.setCurrentTimeAsync(0);
-                phase.changeTo(Phase.VideoLoaded);
+        try {
+            debugMsg(`selectedFile.files.length:${selectedFile.files.length}`);
+            if (selectedFile.files.length > 0) {
+                debugMsg(`selectedFile.files[0].name:${selectedFile.files[0].name}`);
+                if (imageAnalyzer) {
+                    imageAnalyzer.dispose();
+                    imageAnalyzer = undefined;
+                    phase.changeTo(Phase.Initial);
+                }
+                updateInputVideo();
+                imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, selectedFile.files[0]);
+                if (imageAnalyzer) {
+                    await imageAnalyzer.setCurrentTimeAsync(0);
+                    phase.changeTo(Phase.VideoLoaded);
+                }
+                else {
+                    debugMsg("ImageAnalyzer.createAsyncに失敗");
+                }
             }
+            updateInputVideo();
         }
-        updateInputVideo();
+        catch (e) {
+            console.log(e);
+            debugMsg(e);
+        }
     }, false);
 
     (document.getElementById("startTimeSetButton") as HTMLButtonElement).onclick = () => {

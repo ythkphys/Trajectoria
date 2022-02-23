@@ -40,3 +40,12 @@ export type TXY = {
     x: number,
     y: number
 };
+
+export function debugMsg(message: any) {
+    const div = document.getElementById("debugMessage");
+    const msgP = document.createElement("p");
+    msgP.textContent = message;
+    div.appendChild(msgP);
+    console.log(message);
+}
+

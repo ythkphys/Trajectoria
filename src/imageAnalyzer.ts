@@ -1,5 +1,5 @@
 import cv, { Mat, opencv ,Point} from "../opencv-ts/src/opencv";
-import { TrajParameter, Resource, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE, Status } from "./utilities";
+import { TrajParameter, Resource, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE, Status ,debugMsg} from "./utilities";
 import { Detector, DetectType} from "./detector";
 import { TrajMotionData } from "./trajMotionData";
 
@@ -46,16 +46,34 @@ export class ImageAnalyzer {
     }
 
     static createAsync(videoElement: HTMLVideoElement, filename: File): Promise<ImageAnalyzer>{
+        debugMsg("start createAsync");
+
         return new Promise((resolve, reject) => {
+
+            debugMsg("createAsync #1");
             videoElement.addEventListener(
-                "canplay", () => resolve(new ImageAnalyzer(videoElement)), { once: true }
+                "canplay", () => {
+                    debugMsg("createAsync #2");resolve(new ImageAnalyzer(videoElement));}, { once: true }
             );
+            videoElement.addEventListener(
+                "error", (e) => {
+                    debugMsg("error on load Video");
+                    console.log(e);
+                    reject(undefined);
+                }
+            );
+
             try {
+
+                debugMsg("createAsync #3");
                 videoElement.src = URL.createObjectURL(filename);
+                debugMsg(videoElement.src);
+                debugMsg("createAsync #4");
             }
             catch {
+                debugMsg("createAsync #5");
                 console.log("[ERROR] cannnot load video file");
-                reject("[ERROR] cannnot load video file");
+                reject(undefined);
             }
         });
     }
@@ -76,7 +94,9 @@ export class ImageAnalyzer {
 
     setCurrentTimeAsync(time: number) {
         return new Promise(resolve => {
-            this.p.videoElement.addEventListener("canplay", resolve, { once: true });
+            debugMsg("createAsync setCurrentTimeAsync #1");
+            this.p.videoElement.addEventListener("canplay", () => {
+                debugMsg("createAsync setCurrentTimeAsync #2"); resolve(0);}, { once: true });
             this.p.videoElement.currentTime = time;
         });
     }
