@@ -93,10 +93,18 @@ export class ImageAnalyzer {
     }
 
     setCurrentTimeAsync(time: number) {
-        return new Promise(resolve => {
+        return new Promise((resolve,reject) => {
             debugMsg("createAsync setCurrentTimeAsync #1");
             this.p.videoElement.addEventListener("canplay", () => {
-                debugMsg("createAsync setCurrentTimeAsync #2"); resolve(0);}, { once: true });
+                debugMsg("createAsync setCurrentTimeAsync canplay"); resolve(0);
+            }, { once: true });
+            this.p.videoElement.addEventListener("error", () => {
+                debugMsg("createAsync setCurrentTimeAsync error"); reject(0);
+            }, { once: true });
+            this.p.videoElement.addEventListener("seeking", () => {
+                debugMsg("createAsync setCurrentTimeAsync seeking"); resolve(0);
+            }, { once: true });
+
             this.p.videoElement.currentTime = time;
         });
     }

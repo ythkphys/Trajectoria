@@ -1,2 +1,176 @@
-<!doctype html><html lang="ja"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trajectoria</title><style>:root {--max-picture-size:640px;} 
-        .figureMax {max-width:var(--max-picture-size);max-height:var(--max-picture-size);}</style><script defer="defer" src="main.js"></script></head><body><div class="container"><h1 class="bg-primary text-white p-2">Trajectoria</h1><ul class="nav nav-tabs"><li class="nav-item"><button class="nav-link active" type="button" data-bs-toggle="tab" data-bs-target="#videoInputTab"><span class="bi bi-camera-reels-fill"></span> 動画の読み込み</button></li><li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#adjustParametersTab"><span class="bi bi-back"></span> パラメータ調整</button></li><li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#motionAnalyzeTab"><span class="bi bi-star-fill"></span> 運動の解析</button></li><li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#debugTab"><span class="bi bi-exclamation-square-fill"></span> デバッグ用</button></li></ul><div class="modal fade" id="modalAlert" tabindex="-1"><div class="modal-dialog"><div class="modal-content border-0"><div class="alert alert-warning alert-dismissible fade show mb-0" role="alert"><strong>エラー:</strong> <span id="modalErrorText"></span> <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button></div></div></div></div><div class="tab-content"><div class="tab-pane fade in show active" id="videoInputTab"><h4 class="page-header my-3">ファイルの選択</h4><div class="row align-items-start"><div class="col-12 col-xxl-6"><div class="pb-3"><input class="form-control" type="file" accept="video/*" id="selectedFile" name="file"/></div><div class="position-relative"><video id="videoInput" src="" class="figureMax" muted controls playsinline></video><canvas id="videoCanvas" style="pointer-events: none;" class="figureMax position-absolute top-0 start-0"></canvas></div></div><div class="col-12 col-xxl-6"><div class="card" id="videoInputCardTime"><h5 class="card-header">解析範囲(時間)の設定</h5><div class="card-body"><div class="row gx-5"><div class="col py-1 d-flex justify-content-start align-items-center"><div class="pe-2">開始時間:</div><div class="alert alert-primary my-0 p-2 flex-fill" style="text-align: center;" id="startTimeText"></div><button class="btn btn-outline-primary btn-sm" id="startTimeSetButton"><span class="bi bi-check"></span></button></div><div class="col py-1 d-flex justify-content-start align-items-center"><div class="pe-2">終了時間:</div><div class="alert alert-primary my-0 p-2 my-0 flex-fill" style="text-align: center;" id="endTimeText"></div><button class="btn btn-outline-primary btn-sm" id="endTimeSetButton"><span class="bi bi-check"></span></button></div></div></div></div><div class="card mt-3" id="videoInputCardSpace"><h5 class="card-header">解析範囲(空間)の設定</h5><div class="card-body"><div class="d-flex py-2 justify-content-start align-items-center"><label class="form-label">上</label> <input type="range" class="form-range flex-fill mx-3" id="rangeUpInput"><div class="alert alert-primary my-0 p-2" id="rangeUpText">000</div></div><div class="d-flex py-2 justify-content-start"><label class="form-label">下</label> <input type="range" class="form-range flex-fill mx-3" id="rangeDownInput"><div class="alert alert-primary my-0 p-2" id="rangeDownText">000</div></div><div class="d-flex py-2 justify-content-start"><label class="form-label">左</label> <input type="range" class="form-range flex-fill mx-3" id="rangeLeftInput"><div class="alert alert-primary my-0 p-2" id="rangeLeftText">000</div></div><div class="d-flex py-2 justify-content-start"><label class="form-label">右</label> <input type="range" class="form-range flex-fill mx-3" id="rangeRightInput"><div class="alert alert-primary my-0 p-2" id="rangeRightText">000</div></div></div></div></div></div></div><div class="tab-pane fade" id="adjustParametersTab"><div class="progress my-5"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" id="adjustParametersProgressbar" style="width: 0%;"></div></div><div class="row"><div class="col-12 col-xxl-6"><h4 class="page-header mt-3">背景の確認</h4><canvas id="adjustParametersCanvas" class="figureMax"></canvas></div><div class="col-12 col-xxl-6"><h4 class="page-header mt-3">前景マスクの確認</h4><canvas id="binaryCheckCanvas" class="figureMax"></canvas></div></div></div><div class="tab-pane fade" id="motionAnalyzeTab"><div class="progress my-5"><div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" id="motionAnalyzeProgressbar" style="width: 0%;"></div></div><div class="row"><div class="col-12 col-xxl-6"><h4 class="page-header mt-3">ストロボ表示</h4><canvas id="storoboCanvas" class="figureMax"></canvas></div><div class="col-12 col-xxl-6"><h4 class="page-header mt-3">軌跡表示</h4><canvas id="trajectoryCanvas" class="figureMax"></canvas></div></div></div><div class="tab-pane fade" id="debugTab"><h3 class="page-header my-3">デバッグCanvas</h3><canvas id="canvas0" class="col-md-6 figureMax border border-2 testcanvas"></canvas><canvas id="canvas1" class="col-md-6 figureMax border border-2 testcanvas"></canvas><canvas id="canvas2" class="col-md-6 figureMax border border-2 testcanvas"></canvas><canvas id="canvas3" class="col-md-6 figureMax border border-2 testcanvas"></canvas><canvas id="canvas4" class="col-md-6 figureMax border border-2 testcanvas"></canvas><canvas id="canvas5" class="col-md-6 figureMax border border-2 testcanvas"></canvas><canvas id="canvas6" class="col-md-6 figureMax border border-2 testcanvas"></canvas></div></div><h3 class="page-header my-3">デバッグMessage</h3><div id="debugMessage"></div></div></body></html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trajectoria</title>
+    <style type="text/css">
+        :root {--max-picture-size:640px;} 
+        .figureMax {max-width:var(--max-picture-size);max-height:var(--max-picture-size);}
+    </style>
+<script defer src="main.js"></script></head>
+
+<body>
+<div class="container">
+    <h1 class="bg-primary text-white p-2">Trajectoria</h1>
+
+    <!--タブ-->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <button class="nav-link active" type="button" data-bs-toggle="tab" data-bs-target="#videoInputTab">
+                <span class="bi bi-camera-reels-fill"></span>
+                動画の読み込み
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"  type="button" data-bs-toggle="tab" data-bs-target="#adjustParametersTab">
+                <span class="bi bi-back"></span>
+                パラメータ調整
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#motionAnalyzeTab">
+                <span class="bi bi-star-fill"></span>
+                運動の解析
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#debugTab">
+                <span class="bi bi-exclamation-square-fill"></span>
+                デバッグ用
+            </button>
+        </li>
+    </ul>
+    
+    <!--モーダル-->
+    <div class="modal fade" id="modalAlert" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0">
+                <div class="alert alert-warning alert-dismissible fade show mb-0" role="alert">
+                    <strong>エラー:</strong> <span id="modalErrorText"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--メインコンテンツ-->
+    <div class="tab-content">
+        <!--VideoInput-->
+        <div class="tab-pane fade in show active" id="videoInputTab">
+            <h4 class="page-header my-3">ファイルの選択</h4>
+            <div class="row align-items-start">
+                <div class="col-12 col-xxl-6">
+                    <div class="pb-3"><input class="form-control" type="file" accept="video/*" id="selectedFile" name="file"/></div>
+                    <div class="position-relative">
+                        <video id="videoInput" src="" class="figureMax" muted controls playsinline></video>
+                        <canvas id="videoCanvas" style ="pointer-events: none;" class="figureMax position-absolute top-0 start-0"></canvas>
+                    </div>
+                </div>
+
+                <div class="col-12 col-xxl-6">
+                    <div class="card" id="videoInputCardTime">
+                        <h5 class="card-header">解析範囲(時間)の設定</h5>
+                        <div class="card-body">
+                            <div class="row gx-5">
+                                <div class="col py-1 d-flex justify-content-start align-items-center">
+                                    <div class="pe-2">開始時間:</div>
+                                    <div class="alert alert-primary my-0 p-2 flex-fill" style="text-align: center;" id="startTimeText"></div>
+                                    <button class="btn btn-outline-primary btn-sm" id="startTimeSetButton">
+                                        <span class="bi bi-check"></span>
+                                    </button>
+                                </div>
+                                <div class="col py-1 d-flex justify-content-start align-items-center">
+                                    <div class="pe-2">終了時間:</div>
+                                    <div class="alert alert-primary my-0 p-2 my-0 flex-fill" style="text-align: center;" id="endTimeText"></div>
+                                    <button class="btn btn-outline-primary btn-sm" id="endTimeSetButton">
+                                        <span class="bi bi-check"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-3" id="videoInputCardSpace">
+                        <h5 class="card-header">解析範囲(空間)の設定</h5>
+                        <div class="card-body">
+                            <div class="d-flex py-2 justify-content-start align-items-center">
+                                <label class="form-label">上</label>
+                                <input type="range" class="form-range flex-fill mx-3" id="rangeUpInput">
+                                <div class="alert alert-primary my-0 p-2" id="rangeUpText">000</div>
+                            </div>
+                            <div class="d-flex py-2 justify-content-start">
+                                <label class="form-label">下</label>
+                                <input type="range" class="form-range flex-fill mx-3" id="rangeDownInput">
+                                <div class="alert alert-primary my-0 p-2" id="rangeDownText">000</div>
+                            </div>
+                            <div class="d-flex py-2 justify-content-start">
+                                <label class="form-label">左</label>
+                                <input type="range" class="form-range flex-fill mx-3" id="rangeLeftInput">
+                                <div class="alert alert-primary my-0 p-2" id="rangeLeftText">000</div>
+                            </div>
+                            <div class="d-flex py-2 justify-content-start">
+                                <label class="form-label">右</label>
+                                <input type="range" class="form-range flex-fill mx-3" id="rangeRightInput">
+                                <div class="alert alert-primary my-0 p-2"  id="rangeRightText">000</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--adjustParametersCheck-->
+        <div class="tab-pane fade" id="adjustParametersTab">
+            <div class="progress my-5">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    id="adjustParametersProgressbar" style="width: 0%;"></div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-xxl-6">
+                    <h4 class="page-header mt-3">背景の確認</h4>
+                    <canvas id="adjustParametersCanvas" class="figureMax"></canvas>                   
+                </div>
+                <div class="col-12 col-xxl-6">
+                    <h4 class="page-header mt-3">前景マスクの確認</h4>
+                    <canvas id="binaryCheckCanvas" class="figureMax"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!--motionAnalyze-->
+        <div class="tab-pane fade" id="motionAnalyzeTab">
+            <div class="progress my-5">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    id="motionAnalyzeProgressbar" style="width: 0%;"></div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-xxl-6">
+                    <h4 class="page-header mt-3">ストロボ表示</h4>
+                    <canvas id="storoboCanvas" class="figureMax"></canvas>
+                </div>
+                <div class="col-12 col-xxl-6">
+                    <h4 class="page-header mt-3">軌跡表示</h4>
+                    <canvas id="trajectoryCanvas" class="figureMax"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!--debug-->
+        <div class="tab-pane fade" id="debugTab">
+        
+            
+            <h3 class="page-header my-3">デバッグCanvas</h3>
+            <canvas id="canvas0" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+            <canvas id="canvas1" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+            <canvas id="canvas2" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+            <canvas id="canvas3" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+            <canvas id="canvas4" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+            <canvas id="canvas5" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+            <canvas id="canvas6" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
+        </div>
+    </div>
+
+    <h3 class="page-header my-3">デバッグMessage</h3>
+    <div id="debugMessage"></div> 
+</div>
+</body>
+</html>
