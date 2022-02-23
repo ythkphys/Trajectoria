@@ -46,12 +46,8 @@ export class ImageAnalyzer {
     }
 
     static createAsync(videoElement: HTMLVideoElement, filename: File): Promise<ImageAnalyzer>{
-        debugMsg("start createAsync");
-
         return new Promise((resolve, reject) => {
-
-            debugMsg("createAsync #1");
-            videoElement.addEventListener(
+       videoElement.addEventListener(
                 "canplay", () => {
                     debugMsg("createAsync #2");resolve(new ImageAnalyzer(videoElement));}, { once: true }
             );
@@ -67,6 +63,7 @@ export class ImageAnalyzer {
 
                 debugMsg("createAsync #3");
                 videoElement.src = URL.createObjectURL(filename);
+                videoElement.load();
                 debugMsg(videoElement.src);
                 debugMsg("createAsync #4");
             }
@@ -94,15 +91,15 @@ export class ImageAnalyzer {
 
     setCurrentTimeAsync(time: number) {
         return new Promise((resolve,reject) => {
-            debugMsg("createAsync setCurrentTimeAsync #1");
+            debugMsg("createAsync setCurrentTimeAsync start");
             this.p.videoElement.addEventListener("canplay", () => {
                 debugMsg("createAsync setCurrentTimeAsync canplay"); resolve(0);
             }, { once: true });
+            this.p.videoElement.addEventListener("seeked", () => {
+                debugMsg("createAsync setCurrentTimeAsync seeked"); resolve(0);
+            }, { once: true });
             this.p.videoElement.addEventListener("error", () => {
                 debugMsg("createAsync setCurrentTimeAsync error"); reject(0);
-            }, { once: true });
-            this.p.videoElement.addEventListener("seeking", () => {
-                debugMsg("createAsync setCurrentTimeAsync seeking"); resolve(0);
             }, { once: true });
 
             this.p.videoElement.currentTime = time;
