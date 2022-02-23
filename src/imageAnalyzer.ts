@@ -1,5 +1,5 @@
 import cv, { Mat, opencv ,Point} from "../opencv-ts/src/opencv";
-import { TrajParameter, Resource, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE, Status ,debugMsg} from "./utilities";
+import { TrajParameter, Resource, debugMsg, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE} from "./utilities";
 import { Detector, DetectType} from "./detector";
 import { TrajMotionData } from "./trajMotionData";
 
@@ -10,7 +10,7 @@ export class ImageAnalyzer {
     detector: Detector;
 
     private constructor(video: HTMLVideoElement) {
-        this.p = { videoElement: video, status:"Idling"};
+        this.p = { videoElement: video};
         this.r = {};
         this.data = new TrajMotionData(); 
         this.detector = new Detector();

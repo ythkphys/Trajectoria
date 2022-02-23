@@ -10,11 +10,8 @@ export type Circle = {
     radius: number,
 }
 
-export type Status = "Idling" | "Processing" | "Canceling";
-
 export type TrajParameter = {
     videoElement: HTMLVideoElement;
-    status: Status;         // 計算中かどうかのフラグ
     videoDuration?: number; // 動画の長さ
     trueWidth?: number;     // 動画の元の幅
     trueHeight?: number;    // 動画の元の高さ
@@ -42,10 +39,8 @@ export type TXY = {
 };
 
 export function debugMsg(message: any) {
-    const div = document.getElementById("debugMessage");
     const msgP = document.createElement("p");
     msgP.textContent = message;
-    div.appendChild(msgP);
+    document.getElementById("debugMessage").appendChild(msgP);
     console.log(message);
 }
-
