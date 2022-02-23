@@ -47,31 +47,24 @@ export class ImageAnalyzer {
 
     static createAsync(videoElement: HTMLVideoElement, filename: File): Promise<ImageAnalyzer>{
         return new Promise((resolve, reject) => {
-       videoElement.addEventListener(
+            let resolved = false;
+            videoElement.addEventListener(
                 "canplay", () => {
-                    debugMsg("createAsync #2");resolve(new ImageAnalyzer(videoElement));}, { once: true }
+                    if (!resolved) {
+                        resolved = true;
+                        debugMsg("videoElement : canplay");
+                        resolve(new ImageAnalyzer(videoElement));
+                    }
+                }, { once: true }
             );
             videoElement.addEventListener(
                 "error", (e) => {
-                    debugMsg("error on load Video");
-                    console.log(e);
+                    debugMsg("videoElement : error");
                     reject(undefined);
                 }
             );
-
-            try {
-
-                debugMsg("createAsync #3");
-                videoElement.src = URL.createObjectURL(filename);
-                videoElement.load();
-                debugMsg(videoElement.src);
-                debugMsg("createAsync #4");
-            }
-            catch {
-                debugMsg("createAsync #5");
-                console.log("[ERROR] cannnot load video file");
-                reject(undefined);
-            }
+            videoElement.src = URL.createObjectURL(filename);
+            videoElement.load();
         });
     }
 
@@ -91,17 +84,7 @@ export class ImageAnalyzer {
 
     setCurrentTimeAsync(time: number) {
         return new Promise((resolve,reject) => {
-            debugMsg("createAsync setCurrentTimeAsync start");
-            this.p.videoElement.addEventListener("canplay", () => {
-                debugMsg("createAsync setCurrentTimeAsync canplay"); resolve(0);
-            }, { once: true });
-            this.p.videoElement.addEventListener("seeked", () => {
-                debugMsg("createAsync setCurrentTimeAsync seeked"); resolve(0);
-            }, { once: true });
-            this.p.videoElement.addEventListener("error", () => {
-                debugMsg("createAsync setCurrentTimeAsync error"); reject(0);
-            }, { once: true });
-
+            this.p.videoElement.addEventListener("seeked", resolve, { once: true });
             this.p.videoElement.currentTime = time;
         });
     }

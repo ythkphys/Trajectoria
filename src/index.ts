@@ -121,31 +121,27 @@ window.addEventListener('load', () => {
 
     /* InputVideo  */
     selectedFile.addEventListener("change", async (e) => {
-        try {
-            debugMsg(`selectedFile.files.length:${selectedFile.files.length}`);
-            if (selectedFile.files.length > 0) {
-                debugMsg(`selectedFile.files[0].name:${selectedFile.files[0].name}`);
-                if (imageAnalyzer) {
-                    imageAnalyzer.dispose();
-                    imageAnalyzer = undefined;
-                    phase.changeTo(Phase.Initial);
-                }
-                updateInputVideo();
-                imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, selectedFile.files[0]);
-                if (imageAnalyzer) {
-                    await imageAnalyzer.setCurrentTimeAsync(0);
-                    phase.changeTo(Phase.VideoLoaded);
-                }
-                else {
-                    debugMsg("ImageAnalyzer.createAsyncに失敗");
-                }
+        debugMsg(`selectedFile.files.length:${selectedFile.files.length}`);
+        if (selectedFile.files.length > 0) {
+            debugMsg(`selectedFile.files[0].name:${selectedFile.files[0].name}`);
+            if (imageAnalyzer) {
+                imageAnalyzer.dispose();
+                imageAnalyzer = undefined;
+                phase.changeTo(Phase.Initial);
             }
             updateInputVideo();
+            try {
+                imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, selectedFile.files[0]);
+                await imageAnalyzer.setCurrentTimeAsync(0);
+                phase.changeTo(Phase.VideoLoaded);
+            }
+            catch {
+                debugMsg("ImageAnalyzer.createAsyncに失敗");
+                imageAnalyzer = undefined;
+            }
         }
-        catch (e) {
-            console.log(e);
-            debugMsg(e);
-        }
+        updateInputVideo();
+        
     }, false);
 
     (document.getElementById("startTimeSetButton") as HTMLButtonElement).onclick = () => {
