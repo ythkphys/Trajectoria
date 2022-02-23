@@ -20,6 +20,10 @@ let adjustParametersTabButton: HTMLButtonElement;
 let motionAnalyzeTabButton: HTMLButtonElement;
 let debugTabButton: HTMLButtonElement;
 
+let rangeThreshInput: HTMLInputElement;
+let checkThreshInput:HTMLInputElement;
+let rangeThreshText: HTMLElement;
+
 const rangeInput: { [str: string]: HTMLInputElement } = {};
 const rangeText: { [str: string]: HTMLElement } = {};
 
@@ -80,6 +84,10 @@ window.addEventListener('load', () => {
     motionAnalyzeTabButton = document.querySelector('button[data-bs-target="#motionAnalyzeTab"]');
     debugTabButton = document.querySelector('button[data-bs-target="#debugTab"]');
 
+    rangeThreshInput = document.getElementById("rangeThreshInput") as HTMLInputElement;
+    checkThreshInput = document.getElementById("checkThreshInput") as HTMLInputElement;
+    rangeThreshText = document.getElementById("rangeThreshText");
+
     ["Up", "Down", "Left", "Right"].forEach(str => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
         rangeText[str] = document.getElementById(`range${str}Text`) as HTMLElement;
@@ -123,7 +131,7 @@ window.addEventListener('load', () => {
         button.addEventListener("hide.bs.tab", (e) => AsyncCommand.subscribe(
             "HideTab",
             async (isChanceling) => { },
-            () => { e.preventDefault ()}
+            () => { e.preventDefault() }
         ))
     });
     
@@ -169,7 +177,8 @@ window.addEventListener('load', () => {
     ));
 
     /* InputVideo event */
-    selectedFile.addEventListener("change", () => AsyncCommand.subscribe("inputVideoButtonClick",
+    selectedFile.addEventListener("change", () => AsyncCommand.subscribe(
+        "inputVideoButtonClick",
         async (isChanceling) => {
             if (selectedFile.files.length > 0) {
                 await loadVideoAsync(selectedFile.files[0]);
@@ -177,7 +186,8 @@ window.addEventListener('load', () => {
         })
     );
     
-    document.getElementById("startTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe("startTimeSetButtonClick",
+    document.getElementById("startTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe(
+        "startTimeSetButtonClick",
         async (isChanceling) => {
             if (imageAnalyzer) {
                 const changed = imageAnalyzer.setStartTime();
@@ -190,7 +200,8 @@ window.addEventListener('load', () => {
         })
     );
 
-    document.getElementById("endTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe("endTimeSetButtonClick",
+    document.getElementById("endTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe(
+        "endTimeSetButtonClick",
         async (isChanceling) => {
             if (imageAnalyzer) {
                 const changed = imageAnalyzer.setEndTime();
@@ -202,6 +213,37 @@ window.addEventListener('load', () => {
             updateInputVideo();
         })
     );
+
+    /* adjustParameters event */
+    rangeThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
+        "rangeThreshInputChange",
+        async (isChanceling) => {
+            const value = rangeThreshInput.value;
+            rangeThreshText.textContent = value
+            const changed = imageAnalyzer.setThresh(parseInt(rangeThreshInput.value), checkThreshInput.checked);
+            if (changed) {
+                phase.reduceTo(Phase.BackgroundDetected);
+                if (phase.equalsTo(Phase.BackgroundDetected)) {
+                    await updateCheckBackgroundAsync();       
+                }
+            }
+        })
+    );
+    checkThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
+        "checkThreshInputChange",
+        async (isChanceling) => {
+            const value = checkThreshInput.checked;
+            rangeThreshInput.disabled = value;
+            const changed = imageAnalyzer.setThresh(parseInt(rangeThreshInput.value), value);
+            if (changed) {
+                phase.reduceTo(Phase.BackgroundDetected);
+                if (phase.equalsTo(Phase.BackgroundDetected)) {
+                    await updateCheckBackgroundAsync();
+                }
+            }
+        })
+    );
+
 });
 
 function updateInputVideo() {
@@ -261,15 +303,25 @@ async function updateCheckBackgroundAsync() {
     const barUpdate2 = (p: number) => bar.style.width = (p * 20 + 80).toFixed() + "%";
     barUpdate1(0);
 
-    adjustParametersCanvas.getContext("2d").clearRect(0, 0, adjustParametersCanvas.width, adjustParametersCanvas.height);
-    binaryCheckCanvas.getContext("2d").clearRect(0, 0, binaryCheckCanvas.width, binaryCheckCanvas.height);
+    checkThreshInput.checked = imageAnalyzer.p.autoThreshold;
+    if (!checkThreshInput.checked) {
+        rangeThreshText.textContent = imageAnalyzer.p.threshold.toString();
+        rangeThreshInput.value = imageAnalyzer.p.threshold.toString();
+    }
+
     if (phase.lessThan(Phase.BackgroundDetected)) {
+        adjustParametersCanvas.getContext("2d").clearRect(0, 0, adjustParametersCanvas.width, adjustParametersCanvas.height);
         await imageAnalyzer.calcBackgroundAsync(barUpdate1).then(() => {
             cv.imshow(adjustParametersCanvas, imageAnalyzer.r.backRegionMat);
             phase.changeTo(Phase.BackgroundDetected);
         });
     }
     await imageAnalyzer.calcBinaryCheckMatAsync(barUpdate2).then(() => {
+        if (checkThreshInput.checked) {
+            rangeThreshText.textContent = imageAnalyzer.p.threshold.toString();
+            rangeThreshInput.value = imageAnalyzer.p.threshold.toString();
+        }
+        binaryCheckCanvas.getContext("2d").clearRect(0, 0, binaryCheckCanvas.width, binaryCheckCanvas.height);
         cv.imshow(binaryCheckCanvas, imageAnalyzer.r.binaryCheckMat);
         phase.changeTo(Phase.ObjectMasked);
     });

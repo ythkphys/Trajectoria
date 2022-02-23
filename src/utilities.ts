@@ -20,6 +20,8 @@ export type TrajParameter = {
     startTime?: number;     // 解析範囲(時間)の始まり
     endTime?: number;       // 解析範囲(時間)の終わり
     region?: Rect;          // 解析範囲(空間)
+    threshold: number;     // 二値化の際の閾値
+    autoThreshold: boolean;// Otsuを使うかどうか
 }
 
 export type Resource = {

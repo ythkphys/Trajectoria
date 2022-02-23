@@ -54,7 +54,13 @@ export class Detector{
         cv.absdiff(this.srcRegionMat, r.backRegionMat, this.diffMat);
         cv.cvtColor(this.diffMat, this.diffGrayMat1, cv.COLOR_BGR2GRAY);
         cv.GaussianBlur(this.diffGrayMat1, this.diffGrayMat2, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
-        cv.threshold(this.diffGrayMat2, this.binaryMat1, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
+        if (p.autoThreshold) {
+            p.threshold = <number><unknown>cv.threshold(this.diffGrayMat2, this.binaryMat1, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
+            console.log(`DetectOne:${p.threshold}`);
+        }
+        else {
+            cv.threshold(this.diffGrayMat2, this.binaryMat1, p.threshold, 255, cv.THRESH_BINARY);
+        }
         cv.morphologyEx(this.binaryMat1, this.binaryMat2, cv.MORPH_OPEN, this.kernel, new cv.Point(-1, -1), 2, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
         cv.findContours(this.binaryMat2, this.contours, this.hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE);
         return this.contoursAnalyzeFunc(p, r, time);

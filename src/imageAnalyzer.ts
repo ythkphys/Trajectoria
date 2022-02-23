@@ -10,7 +10,7 @@ export class ImageAnalyzer {
     detector: Detector;
 
     private constructor(video: HTMLVideoElement) {
-        this.p = { videoElement: video};
+        this.p = { videoElement: video, threshold:5, autoThreshold:true};
         this.r = {};
         this.data = new TrajMotionData(); 
         this.detector = new Detector();
@@ -119,6 +119,14 @@ export class ImageAnalyzer {
             || (this.p.region.height !== oldRect.height);
     }
 
+    setThresh(thresh:number, auto:boolean) {
+        const oldThresh = this.p.threshold;
+        const oldAuto = this.p.autoThreshold;
+        this.p.threshold = thresh;
+        this.p.autoThreshold = auto;
+        return (this.p.threshold !== oldThresh) || (this.p.autoThreshold !== oldAuto);
+    }
+
     validateVideoInput(): string{
         if (this.r.cap == null) return "ビデオが正しく読み込まれていません。";
         else if (this.p.startTime >= this.p.endTime) return "「開始」は「終了」よりも小さい必要があります。"; 
@@ -188,6 +196,7 @@ export class ImageAnalyzer {
         mat.copyTo(r.binaryCheckMat);
         mat.delete();
     }
+
     async calcMotionDataAsync(barUpdate: (percent:number) => void) {
         const [p, r, data] = [this.p, this.r, this.data];
         const N = 100;
