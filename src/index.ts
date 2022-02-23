@@ -87,8 +87,8 @@ window.addEventListener('load', () => {
     updateInputVideo();
 
     ["Up", "Down", "Left", "Right"].forEach(str => {
-        const command = `range${str}Changed`;
-        rangeInput[str].addEventListener("input", (e) => AsyncCommand.subscribe(command,
+        rangeInput[str].addEventListener("input", (e) => AsyncCommand.subscribe(
+            `range${str}Changed`,
             async (isChanceling) => {
                 ["Up", "Down", "Left", "Right"].forEach(s => {
                     rangeText[s].textContent = rangeInput[s].value.toString();
@@ -118,7 +118,7 @@ window.addEventListener('load', () => {
     });
 
 
-    /* tabs */
+    /* tab event*/
     [videoInputTabButton, adjustParametersTabButton, motionAnalyzeTabButton, debugTabButton].forEach(button => {
         button.addEventListener("hide.bs.tab", (e) => AsyncCommand.subscribe(
             "HideTab",
@@ -172,7 +172,7 @@ window.addEventListener('load', () => {
     selectedFile.addEventListener("change", () => AsyncCommand.subscribe("inputVideoButtonClick",
         async (isChanceling) => {
             if (selectedFile.files.length > 0) {
-                loadVideoAsync(selectedFile.files[0]);
+                await loadVideoAsync(selectedFile.files[0]);
             }
         })
     );
@@ -231,7 +231,6 @@ function updateInputVideo() {
     document.getElementById("videoInputCardTime").hidden = hideVideInputContent;
     document.getElementById("videoInputCardSpace").hidden = hideVideInputContent;
 }
-
 
 async function loadVideoAsync(file: File) {
     if (imageAnalyzer) {
