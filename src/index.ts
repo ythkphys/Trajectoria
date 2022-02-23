@@ -119,29 +119,11 @@ window.addEventListener('load', () => {
         }
     });
 
-    /* InputVideo  */
+    /* InputVideo event */
     selectedFile.addEventListener("change", async (e) => {
-        debugMsg(`selectedFile.files.length:${selectedFile.files.length}`);
         if (selectedFile.files.length > 0) {
-            debugMsg(`selectedFile.files[0].name:${selectedFile.files[0].name}`);
-            if (imageAnalyzer) {
-                imageAnalyzer.dispose();
-                imageAnalyzer = undefined;
-                phase.changeTo(Phase.Initial);
-            }
-            updateInputVideo();
-            try {
-                imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, selectedFile.files[0]);
-                await imageAnalyzer.setCurrentTimeAsync(0);
-                phase.changeTo(Phase.VideoLoaded);
-            }
-            catch {
-                debugMsg("ImageAnalyzer.createAsyncに失敗");
-                imageAnalyzer = undefined;
-            }
+            loadVideoAsync(selectedFile.files[0]);
         }
-        updateInputVideo();
-        
     }, false);
 
     (document.getElementById("startTimeSetButton") as HTMLButtonElement).onclick = () => {
@@ -194,6 +176,28 @@ function updateInputVideo() {
     document.getElementById("videoInputCardSpace").hidden = hideVideInputContent;
 }
 
+
+async function loadVideoAsync(file :File) {
+    if (imageAnalyzer) {
+        imageAnalyzer.dispose();
+        imageAnalyzer = undefined;
+        phase.changeTo(Phase.Initial);
+    }
+    updateInputVideo();
+    const spinner = document.getElementById("videoInputSpinner");
+    spinner.hidden = false;
+    try { 
+        imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, file);
+        await imageAnalyzer.setCurrentTimeAsync(0);
+        phase.changeTo(Phase.VideoLoaded);
+    }
+    catch {
+        debugMsg("ImageAnalyzer.createAsyncに失敗");
+        imageAnalyzer = undefined;
+    }
+    spinner.hidden = true;
+    updateInputVideo();
+}
 async function updateCheckBackgroundAsync() {
     const bar = document.getElementById("adjustParametersProgressbar");
     bar.parentElement.hidden = false;

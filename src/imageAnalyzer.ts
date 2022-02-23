@@ -126,7 +126,6 @@ export class ImageAnalyzer {
     }
 
     async calcBackgroundAsync(barUpdate: (percent: number) => void) {
-        const pstartT = performance.now();
         const p = this.p;
         const r = this.r;
        
@@ -136,6 +135,7 @@ export class ImageAnalyzer {
 
         const currentTime = p.videoElement.currentTime;
         for (let i = 0; i < NUMBER_OF_MAT_FOR_BACKGROUND; i++) {
+            barUpdate((i + 1) / NUMBER_OF_MAT_FOR_BACKGROUND*0.2);
             await this.setCurrentTimeAsync(this.getTime(p.startTime, p.endTime, i));
             r.cap.read(r.srcMat);
             const mat = new cv.Mat();
@@ -152,7 +152,7 @@ export class ImageAnalyzer {
         const xmax = xmin + p.region.width;
         const w = p.targetWidth;
         for (let y = ymin; y < ymax; y++) {
-            barUpdate((y - ymin) / (ymax - ymin)); 
+            barUpdate((y - ymin) / (ymax - ymin)*0.8+0.2); 
             for (let x = xmin; x < xmax; x++) {
                 const n3 = (y * w + x ) * 3;
                 const m3 = ( (y-ymin) * p.region.width + x-xmin) * 3;
@@ -222,7 +222,6 @@ export class ImageAnalyzer {
                 }
             }
         }
-        barUpdate(1);
     }
 
     async test(canvases: HTMLCanvasElement[]) {
