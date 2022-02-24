@@ -185,6 +185,7 @@ export class ImageAnalyzer {
     async calcBinaryCheckMatAsync(barUpdate: (percent: number) => void) {
         const [p, r] = [this.p, this.r];
         const mat = new cv.Mat(p.region.height, p.region.width, cv.CV_8UC1, new cv.Scalar(0));
+        this.detector.resetThreshList();
         for (let i = 0; i < NUMBER_OF_MAT_FOR_BACKGROUND; i++) {
             barUpdate( i/ (NUMBER_OF_MAT_FOR_BACKGROUND-1));
             const time = this.getTime(p.startTime, p.endTime, i)
@@ -195,6 +196,8 @@ export class ImageAnalyzer {
         }
         mat.copyTo(r.binaryCheckMat);
         mat.delete();
+
+        if (this.p.autoThreshold) this.p.threshold = this.detector.getAvgThresh();
     }
 
     async calcMotionDataAsync(barUpdate: (percent:number) => void) {

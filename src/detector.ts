@@ -15,6 +15,7 @@ export class Detector{
     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(3, 3), new cv.Point(-1, -1));
     contours = new cv.MatVector();
     hierarchy = new cv.Mat();
+    threahList: number[] = [];
 
     protected dispos: Array<Mat|MatVector>; 
     
@@ -43,6 +44,14 @@ export class Detector{
                 throw new Error();
         }
     }
+    resetThreshList() {
+        this.threahList = [];
+    }
+    getAvgThresh() { 
+        let sum = 0;
+        this.threahList.forEach(t => sum += t);
+        return Math.round(sum / this.threahList.length);
+    }
 
     dispose() {
         this.dispos.forEach(mat => mat?.delete());
@@ -55,8 +64,7 @@ export class Detector{
         cv.cvtColor(this.diffMat, this.diffGrayMat1, cv.COLOR_BGR2GRAY);
         cv.GaussianBlur(this.diffGrayMat1, this.diffGrayMat2, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
         if (p.autoThreshold) {
-            p.threshold = <number><unknown>cv.threshold(this.diffGrayMat2, this.binaryMat1, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
-            console.log(`DetectOne:${p.threshold}`);
+            this.threahList.push(<number><unknown>cv.threshold(this.diffGrayMat2, this.binaryMat1, 0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU));
         }
         else {
             cv.threshold(this.diffGrayMat2, this.binaryMat1, p.threshold, 255, cv.THRESH_BINARY);
