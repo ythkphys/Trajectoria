@@ -40,6 +40,12 @@
             </button>
         </li>
         <li class="nav-item">
+            <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#outputGraphTab">
+                <span class="bi bi-star-fill"></span>
+                グラフ出力
+            </button>
+        </li>
+        <li class="nav-item">
             <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#debugTab">
                 <span class="bi bi-exclamation-square-fill"></span>
                 デバッグ用
@@ -167,6 +173,16 @@
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">軌跡表示</h4>
                     <canvas id="trajectoryCanvas" class="figureMax"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!--outputGraph-->
+        <div class="tab-pane fade" id="outputGraphTab">
+            <div class="row">
+                <div class="col-12 col-xxl-6">
+                    <h4 class="page-header mt-3">x-tグラフ</h4>
+                    <canvas id="xtGraphCanvas" class="figureMax"></canvas>
                 </div>
             </div>
         </div>

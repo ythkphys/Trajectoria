@@ -34,11 +34,7 @@ export type Resource = {
     trajectoryMat?: Mat;
 };
 
-export type TXY = {
-    t: number,
-    x: number,
-    y: number
-};
+export type TXY = [number,number,number];
 
 export function debugMsg(message: any) {
     const msgP = document.createElement("p");

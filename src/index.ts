@@ -4,6 +4,7 @@ import * as bootstrap from "bootstrap";
 import { ImageAnalyzer } from "./imageAnalyzer";
 import { MAX_PICTURE_SIZE} from "./utilities";
 import cv, { Mat, Rect} from "../opencv-ts/src/opencv";
+import Chart  from "../node_modules/chart.js/auto/auto.esm";
 
 let imageAnalyzer: ImageAnalyzer;
 
@@ -15,10 +16,12 @@ let adjustParametersCanvas: HTMLCanvasElement;
 let binaryCheckCanvas: HTMLCanvasElement;
 let storoboCanvas: HTMLCanvasElement;
 let trajectoryCanvas: HTMLCanvasElement;
+let xtGraphCanvas: HTMLCanvasElement;
 
 let videoInputTabButton: HTMLButtonElement;
 let adjustParametersTabButton: HTMLButtonElement;
 let motionAnalyzeTabButton: HTMLButtonElement;
+let outputGraphTabButton: HTMLButtonElement;
 let debugTabButton: HTMLButtonElement;
 
 let rangeThreshInput: HTMLInputElement;
@@ -80,10 +83,12 @@ window.addEventListener('load', () => {
     binaryCheckCanvas = document.getElementById("binaryCheckCanvas") as HTMLCanvasElement;
     trajectoryCanvas = document.getElementById("trajectoryCanvas") as HTMLCanvasElement;
     storoboCanvas = document.getElementById("storoboCanvas") as HTMLCanvasElement;
+    xtGraphCanvas = document.getElementById("xtGraphCanvas") as HTMLCanvasElement;
 
     videoInputTabButton = document.querySelector('button[data-bs-target="#videoInputTab"]');
     adjustParametersTabButton = document.querySelector('button[data-bs-target="#adjustParametersTab"]');
     motionAnalyzeTabButton = document.querySelector('button[data-bs-target="#motionAnalyzeTab"]');
+    outputGraphTabButton = document.querySelector('button[data-bs-target="#outputGraphTab"]');
     debugTabButton = document.querySelector('button[data-bs-target="#debugTab"]');
 
     rangeThreshInput = document.getElementById("rangeThreshInput") as HTMLInputElement;
@@ -126,7 +131,7 @@ window.addEventListener('load', () => {
 
 
     /* tab event*/
-    [videoInputTabButton, adjustParametersTabButton, motionAnalyzeTabButton, debugTabButton].forEach(button => {
+    [videoInputTabButton, adjustParametersTabButton, motionAnalyzeTabButton /*,outputGraphTabButton */].forEach(button => {
         button.addEventListener("hide.bs.tab", (e) => AsyncCommand.subscribe(
             "HideTab", false,
             async (isChanceling) => { },
@@ -171,6 +176,18 @@ window.addEventListener('load', () => {
             }
             else if (phase.equalsTo(Phase.ObjectMasked)) {
                 await updateMotionAnalyzeAsync();
+            }
+        }
+    ));
+
+    outputGraphTabButton.addEventListener("shown.bs.tab", (e) => AsyncCommand.subscribe(
+        "outputGraphTabShown", false,
+        async (isChanceling) => {
+            if (phase.lessThan(Phase.MotionAnaized)) {
+                bootstrap.Tab.getOrCreateInstance(motionAnalyzeTabButton).show();
+            }
+            else if (phase.equalsTo(Phase.MotionAnaized)) {
+                await updateOutputGraphAsync();
             }
         }
     ));
@@ -228,6 +245,7 @@ window.addEventListener('load', () => {
             }
         })
     );
+
     checkThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
         "checkThreshInputChange", true,
         async (isChanceling) => {
@@ -242,6 +260,8 @@ window.addEventListener('load', () => {
             }
         })
     );
+    /* motionAnalyzeEvent */
+    /* outputGraphEvent */
 
 });
 
@@ -295,6 +315,7 @@ async function loadVideoAsync(file: File) {
     spinner.hidden = true;
     updateInputVideo();
 }
+
 async function updateCheckBackgroundAsync() {
     commonProgressbar.hidden = false;
     const barUpdate1 = (p: number) => commonProgressbar.style.width = (p * 80).toFixed() + "%";
@@ -341,6 +362,62 @@ async function updateMotionAnalyzeAsync() {
         commonProgressbar.hidden = true;
     });
 }
+
+async function updateOutputGraphAsync() {
+    commonProgressbar.hidden = false;
+    const graphDataX = imageAnalyzer.data.getGraphDataX();
+    const graphDataY = imageAnalyzer.data.getGraphDataY();
+    const myChart = new Chart(xtGraphCanvas, {
+        type: "scatter",
+        data: {
+            datasets: [
+                {
+                    label: "横成分",
+                    data: graphDataX,
+                    showLine: true,
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    pointRadius: 0,
+                    tension: 0.4,
+                },
+                {
+                    label: "縦成分",
+                    data: graphDataY,
+                    showLine: true,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    pointRadius: 0,
+                    tension: 0.4,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: "時間 [s]",
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "位置 [px]",
+                    }
+                },
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: "位置の時間変化"
+                }
+            }
+        }
+    });
+    commonProgressbar.hidden = true;
+} 
 
 function showErrorModal(str: string) {
     document.getElementById("modalErrorText").textContent = str;

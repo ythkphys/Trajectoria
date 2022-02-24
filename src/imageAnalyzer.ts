@@ -191,7 +191,7 @@ export class ImageAnalyzer {
             const time = this.getTime(p.startTime, p.endTime, i)
             await this.setCurrentTimeAsync(time);
             r.cap.read(r.srcMat);
-            this.detector.detectOne(p, r, time);
+            const _ = this.detector.detectOne(p, r, time);
             cv.bitwise_or(mat, this.detector.binaryMat2, mat);
         }
         mat.copyTo(r.binaryCheckMat);
@@ -208,7 +208,8 @@ export class ImageAnalyzer {
 
         let needInit = true;
         let storoboCnt = 0;
-        const storoboMax = Math.floor(N/10);
+        const storoboMax = Math.floor(N / 10);
+        data.targetH = p.targetHeight;
         for (let i = 0; i < N; i++,storoboCnt++) {
             barUpdate(i / (N-1));
             const time = p.startTime + (p.endTime - p.startTime) * i / (N - 1);
@@ -216,16 +217,17 @@ export class ImageAnalyzer {
             r.cap.read(r.srcMat);
             const txy = this.detector.detectOne(p, r, time);
             if (txy) {
+                const [t, x, y] = txy;
                 data.addTXY(txy);
                 if (needInit) {
                     r.srcMat.copyTo(r.trajectoryMat);
                     r.srcMat.copyTo(r.storoboMat);
-                    p2 = new cv.Point(txy.x, txy.y);
+                    p2 = new cv.Point(x, y);
                     needInit = false;
                 }
                 else {
                     p1 = p2;
-                    p2 = new cv.Point(txy.x, txy.y);
+                    p2 = new cv.Point(x, y);
                     cv.line(r.trajectoryMat, p1, p2, new cv.Scalar(255, 0, 255, 255),3);
                     if (storoboCnt >= storoboMax) {
                         storoboCnt = 0;

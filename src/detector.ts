@@ -48,8 +48,7 @@ export class Detector{
         this.threahList = [];
     }
     getAvgThresh() { 
-        let sum = 0;
-        this.threahList.forEach(t => sum += t);
+        const sum = this.threahList.reduce((a, b) => a + b);
         return Math.round(sum / this.threahList.length);
     }
 
@@ -111,7 +110,7 @@ export class Detector{
             cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), new cv.Scalar(0), cv.FILLED);
             cv.circle(r.objectMask, Offset(circle.center, offX, offY), circle.radius, new cv.Scalar(255), cv.FILLED);
 
-            return {t: time, x: circle.center.x + offX, y: circle.center.y + offY};
+            return [time, circle.center.x + offX, circle.center.y + offY];
         }
         else {
             return undefined;
