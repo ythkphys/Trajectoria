@@ -7,6 +7,7 @@ import cv, { Mat, Rect} from "../opencv-ts/src/opencv";
 
 let imageAnalyzer: ImageAnalyzer;
 
+let commonProgressbar: HTMLElement;
 let selectedFile: HTMLInputElement;
 let videoInputVideo: HTMLVideoElement;
 let videoCanvas: HTMLCanvasElement;
@@ -26,7 +27,6 @@ let rangeThreshText: HTMLElement;
 
 const rangeInput: { [str: string]: HTMLInputElement } = {};
 const rangeText: { [str: string]: HTMLElement } = {};
-
 
 const enum Phase { Initial = 0, VideoNotLoaded = 5, VideoLoaded = 10, BackgroundDetected = 20, ObjectMasked = 25, MotionAnaized = 30 };
 const phase = {
@@ -68,12 +68,11 @@ const AsyncCommand = {
     }
 };
 
-
-
 window.addEventListener('load', () => {
     phase.changeTo(Phase.VideoNotLoaded);
     document.documentElement.style.setProperty("--max-picture-size", `${MAX_PICTURE_SIZE}px`);
     
+    commonProgressbar = document.getElementById("commonProgressbar");
     selectedFile = document.getElementById("selectedFile") as HTMLInputElement;
     videoInputVideo = document.getElementById("videoInput") as HTMLVideoElement;
     videoCanvas = document.getElementById("videoCanvas") as HTMLCanvasElement;
@@ -297,10 +296,9 @@ async function loadVideoAsync(file: File) {
     updateInputVideo();
 }
 async function updateCheckBackgroundAsync() {
-    const bar = document.getElementById("adjustParametersProgressbar");
-    bar.parentElement.hidden = false;
-    const barUpdate1 = (p: number) => bar.style.width = (p * 80).toFixed() + "%";
-    const barUpdate2 = (p: number) => bar.style.width = (p * 20 + 80).toFixed() + "%";
+    commonProgressbar.hidden = false;
+    const barUpdate1 = (p: number) => commonProgressbar.style.width = (p * 80).toFixed() + "%";
+    const barUpdate2 = (p: number) => commonProgressbar.style.width = (p * 20 + 80).toFixed() + "%";
     barUpdate1(0);
 
     checkThreshInput.checked = imageAnalyzer.p.autoThreshold;
@@ -325,12 +323,11 @@ async function updateCheckBackgroundAsync() {
         cv.imshow(binaryCheckCanvas, imageAnalyzer.r.binaryCheckMat);
         phase.changeTo(Phase.ObjectMasked);
     });
-    bar.parentElement.hidden = true;
+    commonProgressbar.hidden = true;
 }
 async function updateMotionAnalyzeAsync() {
-    const bar = document.getElementById("motionAnalyzeProgressbar");
-    bar.parentElement.hidden = false;
-    const barUpdate = (p: number) => bar.style.width = (p * 100).toFixed() + "%";
+    commonProgressbar.hidden = false;
+    const barUpdate = (p: number) => commonProgressbar.style.width = (p * 100).toFixed() + "%";
     barUpdate(0);
 
     storoboCanvas.getContext("2d").clearRect(0, 0, storoboCanvas.width, storoboCanvas.height);
@@ -341,7 +338,7 @@ async function updateMotionAnalyzeAsync() {
         cv.imshow(trajectoryCanvas, imageAnalyzer.r.trajectoryMat);
     }).then(() => {
         phase.changeTo(Phase.MotionAnaized);
-        bar.parentElement.hidden = true;
+        commonProgressbar.hidden = true;
     });
 }
 

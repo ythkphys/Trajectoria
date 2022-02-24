@@ -12,7 +12,12 @@
 
 <body>
 <div class="container">
-    <h1 class="bg-primary text-white p-2">Trajectoria</h1>
+    <h1 class="bg-primary text-white p-2 mb-0">Trajectoria</h1>
+
+    <div class="progress mt-0 mb-2" style="height: 5px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar"
+            id="commonProgressbar" style="width: 0%;" hidden></div>
+    </div>
 
     <!--タブ-->
     <ul class="nav nav-tabs">
@@ -125,10 +130,6 @@
         </div>
         <!--adjustParametersCheck-->
         <div class="tab-pane fade" id="adjustParametersTab">
-            <div class="progress my-5">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                    id="adjustParametersProgressbar" style="width: 0%;"></div>
-            </div>
             <div class="row">
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">背景の確認</h4>
@@ -158,10 +159,6 @@
 
         <!--motionAnalyze-->
         <div class="tab-pane fade" id="motionAnalyzeTab">
-            <div class="progress my-5">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                    id="motionAnalyzeProgressbar" style="width: 0%;"></div>
-            </div>
             <div class="row">
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">ストロボ表示</h4>
