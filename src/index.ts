@@ -42,21 +42,24 @@ type CommandFunc = (isChanceling: () => boolean) => Promise<void>;
 type Status = "Idling" | "Processing" | "Canceling";
 const AsyncCommand = {
     _status: "Idling" as Status,
-    subscribe: function (command:string, onIdlingFunc: CommandFunc, onProcessingFunc:()=>void = undefined) {
+    subscribe: function (command: string, switchToProcessing: boolean,
+        onIdlingFunc: CommandFunc, onProcessingFunc: () => void = undefined) {
         if (this._status === "Idling") {
-            this._status = "Processing";
-            console.log(`*** ${command} : Processing`);
+            if (switchToProcessing) {
+                this._status = "Processing";
+                console.log(`*** ${command} : Processing`);
+            }
             onIdlingFunc(() => this._status === "Canceling")
                 .then(() => {
-                    console.log(`*** ${command} : Processing end`);
-                    this._status = "Idling";
+                    if (switchToProcessing) {
+                        console.log(`*** ${command} : Processing end`);
+                        this._status = "Idling";
+                    }
                 }
             );
         }
         else if (this._status === "Processing") {
-            if (onProcessingFunc) {
-                onProcessingFunc();
-            }
+            if (onProcessingFunc) onProcessingFunc();
         }
     },
     cancel: function () {
@@ -95,48 +98,45 @@ window.addEventListener('load', () => {
     updateInputVideo();
 
     ["Up", "Down", "Left", "Right"].forEach(str => {
-        rangeInput[str].addEventListener("input", (e) => AsyncCommand.subscribe(
-            `range${str}Changed`,
-            async (isChanceling) => {
-                ["Up", "Down", "Left", "Right"].forEach(s => {
-                    rangeText[s].textContent = rangeInput[s].value.toString();
-                });
-                const x1 = Number.parseInt(rangeInput["Left"].value);
-                const y1 = Number.parseInt(rangeInput["Up"].value);
-                const x2 = Number.parseInt(rangeInput["Right"].value);
-                const y2 = Number.parseInt(rangeInput["Down"].value);
-                if (imageAnalyzer?.setRegion(x1, y1, x2, y2)) phase.reduceTo(Phase.VideoLoaded);
+        rangeInput[str].addEventListener("input", (e) => {
+            ["Up", "Down", "Left", "Right"].forEach(s => {
+                rangeText[s].textContent = rangeInput[s].value.toString();
+            });
+            const x1 = Number.parseInt(rangeInput["Left"].value);
+            const y1 = Number.parseInt(rangeInput["Up"].value);
+            const x2 = Number.parseInt(rangeInput["Right"].value);
+            const y2 = Number.parseInt(rangeInput["Down"].value);
+            if (imageAnalyzer?.setRegion(x1, y1, x2, y2)) phase.reduceTo(Phase.VideoLoaded);
 
-                const ctx = videoCanvas.getContext("2d");
-                const w = videoInputVideo.width;
-                const h = videoInputVideo.height;
-                videoCanvas.width = w;
-                videoCanvas.height = h;
-                ctx.clearRect(0, 0, w, h);
-                ctx.beginPath();
-                ctx.moveTo(x1, 0); ctx.lineTo(x1, h);
-                ctx.moveTo(x2, 0); ctx.lineTo(x2, h);
-                ctx.moveTo(0, y1); ctx.lineTo(w, y1);
-                ctx.moveTo(0, y2); ctx.lineTo(w, y2);
-                ctx.strokeStyle = "#3F3";
-                ctx.lineWidth = 3;
-                ctx.stroke();
-            })
-        );
+            const ctx = videoCanvas.getContext("2d");
+            const w = videoInputVideo.width;
+            const h = videoInputVideo.height;
+            videoCanvas.width = w;
+            videoCanvas.height = h;
+            ctx.clearRect(0, 0, w, h);
+            ctx.beginPath();
+            ctx.moveTo(x1, 0); ctx.lineTo(x1, h);
+            ctx.moveTo(x2, 0); ctx.lineTo(x2, h);
+            ctx.moveTo(0, y1); ctx.lineTo(w, y1);
+            ctx.moveTo(0, y2); ctx.lineTo(w, y2);
+            ctx.strokeStyle = "#3F3";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        });
     });
 
 
     /* tab event*/
     [videoInputTabButton, adjustParametersTabButton, motionAnalyzeTabButton, debugTabButton].forEach(button => {
         button.addEventListener("hide.bs.tab", (e) => AsyncCommand.subscribe(
-            "HideTab",
+            "HideTab", false,
             async (isChanceling) => { },
             () => { e.preventDefault() }
         ))
     });
     
     videoInputTabButton.addEventListener("shown.bs.tab", (e) => AsyncCommand.subscribe(
-        "VideInputTabShown",
+        "VideInputTabShown", false,
         async (isChanceling) => {
             imageAnalyzer?.p.videoElement.pause();
             imageAnalyzer?.setCurrentTimeAsync(0);
@@ -145,7 +145,7 @@ window.addEventListener('load', () => {
     ));
     
     adjustParametersTabButton.addEventListener("shown.bs.tab", (e) => AsyncCommand.subscribe(
-        "AdjustParametersTabShown",
+        "AdjustParametersTabShown", false,
         async (isChanceling) => {
             if (phase.lessThan(Phase.VideoLoaded)) {
                 showErrorModal("まずは動画ファイルを選択してください。");
@@ -165,7 +165,7 @@ window.addEventListener('load', () => {
     ));
 
     motionAnalyzeTabButton.addEventListener("shown.bs.tab", (e) => AsyncCommand.subscribe(
-        "MotionAnalyzeTabShown",
+        "MotionAnalyzeTabShown", false,
         async (isChanceling) => {
             if (phase.lessThan(Phase.ObjectMasked)) {
                 bootstrap.Tab.getOrCreateInstance(adjustParametersTabButton).show();
@@ -178,7 +178,7 @@ window.addEventListener('load', () => {
 
     /* InputVideo event */
     selectedFile.addEventListener("change", () => AsyncCommand.subscribe(
-        "inputVideoButtonClick",
+        "inputVideoButtonClick", true,
         async (isChanceling) => {
             if (selectedFile.files.length > 0) {
                 await loadVideoAsync(selectedFile.files[0]);
@@ -187,7 +187,7 @@ window.addEventListener('load', () => {
     );
     
     document.getElementById("startTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe(
-        "startTimeSetButtonClick",
+        "startTimeSetButtonClick", false,
         async (isChanceling) => {
             if (imageAnalyzer) {
                 const changed = imageAnalyzer.setStartTime();
@@ -201,7 +201,7 @@ window.addEventListener('load', () => {
     );
 
     document.getElementById("endTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe(
-        "endTimeSetButtonClick",
+        "endTimeSetButtonClick", false,
         async (isChanceling) => {
             if (imageAnalyzer) {
                 const changed = imageAnalyzer.setEndTime();
@@ -216,7 +216,7 @@ window.addEventListener('load', () => {
 
     /* adjustParameters event */
     rangeThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
-        "rangeThreshInputChange",
+        "rangeThreshInputChange", true,
         async (isChanceling) => {
             const value = rangeThreshInput.value;
             rangeThreshText.textContent = value
@@ -230,7 +230,7 @@ window.addEventListener('load', () => {
         })
     );
     checkThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
-        "checkThreshInputChange",
+        "checkThreshInputChange", true,
         async (isChanceling) => {
             const value = checkThreshInput.checked;
             rangeThreshInput.disabled = value;

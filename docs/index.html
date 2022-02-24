@@ -139,6 +139,21 @@
                     <canvas id="binaryCheckCanvas" class="figureMax"></canvas>
                 </div>
             </div>
+            <div class="col-12 col-xxl-6">
+                <div class="card mt-3" id="adjustParameterCardSpace">
+                    <h5 class="card-header">閾値の設定</h5>
+                    <div class="card-body">
+                        <div class="d-flex py-2 justify-content-start align-items-center">
+                            <div class="form-check form-switch w-25">
+                                <input class="form-check-input" type="checkbox" id="checkThreshInput" checked>
+                                <label class="form-check-label" for="checkThreshInput">自動計算</label>
+                            </div>  
+                            <input type="range" class="form-range flex-fill mx-3" min="0"  max="255" disabled id="rangeThreshInput">
+                            <div class="alert alert-primary my-0 p-2" id="rangeThreshText">000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!--motionAnalyze-->
