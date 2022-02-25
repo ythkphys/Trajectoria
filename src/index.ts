@@ -4,7 +4,7 @@ import * as bootstrap from "bootstrap";
 import { ImageAnalyzer } from "./imageAnalyzer";
 import { MAX_PICTURE_SIZE} from "./utilities";
 import cv, { Mat, Rect} from "../opencv-ts/src/opencv";
-import Chart  from "../node_modules/chart.js/auto/auto.esm";
+
 
 let imageAnalyzer: ImageAnalyzer;
 
@@ -262,7 +262,17 @@ window.addEventListener('load', () => {
     );
     /* motionAnalyzeEvent */
     /* outputGraphEvent */
-
+    document.getElementById("saveXcsvbutton").addEventListener("click", () => AsyncCommand.subscribe(
+        "saveXcsvbuttonClick", false,
+        async (isChanceling) => {
+            if (phase.lessThan(Phase.MotionAnaized)) {
+                showErrorModal("グラフが表示されるまで待ってください。");
+            }
+            else {
+                imageAnalyzer.data.downloadCSVData();
+            }
+        })
+    );
 });
 
 function updateInputVideo() {
@@ -365,57 +375,7 @@ async function updateMotionAnalyzeAsync() {
 
 async function updateOutputGraphAsync() {
     commonProgressbar.hidden = false;
-    const graphDataX = imageAnalyzer.data.getGraphDataX();
-    const graphDataY = imageAnalyzer.data.getGraphDataY();
-    const myChart = new Chart(xtGraphCanvas, {
-        type: "scatter",
-        data: {
-            datasets: [
-                {
-                    label: "横成分",
-                    data: graphDataX,
-                    showLine: true,
-                    borderColor: 'rgb(255, 99, 132)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    pointRadius: 0,
-                    tension: 0.4,
-                },
-                {
-                    label: "縦成分",
-                    data: graphDataY,
-                    showLine: true,
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                    pointRadius: 0,
-                    tension: 0.4,
-                },
-            ],
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: "時間 [s]",
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: "位置 [px]",
-                    }
-                },
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: "位置の時間変化"
-                }
-            }
-        }
-    });
+    imageAnalyzer.data.getChartX(xtGraphCanvas);
     commonProgressbar.hidden = true;
 } 
 

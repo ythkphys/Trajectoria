@@ -181,8 +181,15 @@
         <div class="tab-pane fade" id="outputGraphTab">
             <div class="row">
                 <div class="col-12 col-xxl-6">
-                    <h4 class="page-header mt-3">x-tグラフ</h4>
-                    <canvas id="xtGraphCanvas" class="figureMax"></canvas>
+                    <div class="card mt-3">
+                        <h5 class="card-header d-flex justify-content-between">
+                            <span>x-tグラフ</span>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="saveXcsvbutton">csv保存</button>
+                        </h5>
+                        <div class="card-body">
+                            <canvas id="xtGraphCanvas"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

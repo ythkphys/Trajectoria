@@ -60,6 +60,7 @@ export class ImageAnalyzer {
             videoElement.addEventListener(
                 "error", (e) => {
                     debugMsg("videoElement : error");
+                    URL.revokeObjectURL(videoElement.src);
                     reject(undefined);
                 }
             );
