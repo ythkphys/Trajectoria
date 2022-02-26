@@ -2,8 +2,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as bootstrap from "bootstrap";
 import { ImageAnalyzer } from "./imageAnalyzer";
-import { MAX_PICTURE_SIZE} from "./utilities";
+import { MAX_PICTURE_SIZE, DetectType} from "./utilities";
 import cv, { Mat, Rect} from "../opencv-ts/src/opencv";
+
 
 
 let imageAnalyzer: ImageAnalyzer;
@@ -97,7 +98,7 @@ window.addEventListener('DOMContentLoaded', () => {
     rangeThreshText = document.getElementById("rangeThreshText");
     rangeCurrentTimeInput = document.getElementById("rangeCurrentTimeInput") as HTMLInputElement;
     rangeCurrentTimeText = document.getElementById("rangeCurrentTimeText");
-
+   
     ["Up", "Down", "Left", "Right"].forEach(str => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
         rangeText[str] = document.getElementById(`range${str}Text`) as HTMLElement;
@@ -279,6 +280,19 @@ window.addEventListener('load', () => {
             }
         })
     );
+
+    (["Circle", "Square", "Big"] as DetectType[]).forEach(str => { 
+        document.getElementById("adjustParameterButton" + str).addEventListener("click", (e) => AsyncCommand.subscribe(
+            "adjustParameterButton" + str + "Click", false,
+            async (isChanceling) => { 
+                phase.reduceTo(Phase.BackgroundDetected);
+                if (phase.equalsTo(Phase.BackgroundDetected)) {
+                    imageAnalyzer.setDetectType(str);
+                    await updateAdjustParametersAsync();
+                }
+            }
+        ))
+    });
     /* motionAnalyzeEvent */
     /* outputGraphEvent */
     document.getElementById("saveXcsvbutton").addEventListener("click", () => AsyncCommand.subscribe(
@@ -347,7 +361,8 @@ async function loadVideoAsync(file: File) {
 async function updateAdjustParametersAsync() {
     commonProgressbar.hidden = false;
     const time = imageAnalyzer.p.videoElement.currentTime;
-    rangeCurrentTimeInput.max = imageAnalyzer.p.videoDuration.toString();
+    rangeCurrentTimeInput.min = imageAnalyzer.p.startTime.toString();
+    rangeCurrentTimeInput.max = imageAnalyzer.p.endTime.toString();
     const barUpdate = (p: number) => commonProgressbar.style.width = (p*100).toFixed() + "%";
     barUpdate(0);
 

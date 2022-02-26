@@ -172,17 +172,17 @@
                             </li>
                         </ul>
                         <div class="card-body tab-content">
-                            <div class="tab-pane fade in show active" id="adjustParametersBackPill">
-                                <canvas id="adjustParametersBackCanvas" class="border img-fluid"></canvas>
+                            <div class="tab-pane fade in show active p-0" id="adjustParametersBackPill">
+                                <canvas id="adjustParametersBackCanvas" class="img-fluid"></canvas>
                             </div>
-                            <div class="tab-pane fade" id="adjustParametersSrcPill">
-                                <canvas id="adjustParametersSrcCanvas" class="border img-fluid"></canvas>
+                            <div class="tab-pane fade p-0" id="adjustParametersSrcPill">
+                                <canvas id="adjustParametersSrcCanvas" class="img-fluid"></canvas>
                             </div>  
-                            <div class="tab-pane fade" id="adjustParametersMaskPill">
-                                <canvas id="adjustParametersMaskCanvas" class="border img-fluid"></canvas>
+                            <div class="tab-pane fade p-0" id="adjustParametersMaskPill">
+                                <canvas id="adjustParametersMaskCanvas" class="img-fluid"></canvas>
                             </div>
-                            <div class="tab-pane fade" id="adjustParametersDetectedPill">
-                                <canvas id="adjustParametersDetectedCanvas" class="border img-fluid"></canvas>
+                            <div class="tab-pane fade p-0" id="adjustParametersDetectedPill">
+                                <canvas id="adjustParametersDetectedCanvas" class="img-fluid"></canvas>
                             </div>
                             <div class="d-flex py-2 justify-content-start align-items-center">
                                 <label style="min-width: 2rem;">時間</label>
@@ -199,13 +199,13 @@
                                 <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                     data-bs-target="#adjustParametersThreshCollapse" aria-expanded="true" 
                                     aria-controls="adjustParametersThreshCollapse">
-                                    閾値の設定
+                                    前景マスク閾値
                                 </button>
                             </h5>
                             <div id="adjustParametersThreshCollapse" class="accordion-collapse collapse"
                                 aria-labelledby="adjustParametersThreshHeading">
                                 <div class="accordion-body row gx-5">
-                                    <div class="d-flex py-2 justify-content-start align-items-center">
+                                    <div class="d-flex py-2 justify-content-between align-items-center">
                                         <div class="form-check form-switch w-25">
                                             <input class="form-check-input" type="checkbox" id="checkThreshInput" checked>
                                             <label class="form-check-label" for="checkThreshInput">自動計算</label>
@@ -214,6 +214,33 @@
                                         <div class="alert alert-primary my-0 p-2" id="rangeThreshText" style="min-width: 3rem;text-align: right;"></div>
                                     </div>
                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h5 class="accordion-header" id="adjustParameterMethodHeading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#adjustParametersMethodCollapse" aria-expanded="true"
+                                    aria-controls="adjustParametersMethodCollapse">
+                                    検出方法の設定
+                                </button>
+                            </h5>
+                            <div id="adjustParametersMethodCollapse" class="accordion-collapse collapse show"
+                                aria-labelledby="adjustParametersMethodHeading">
+                                <div class="accordion-body row gx-5">
+                                    <div class="d-flex py-2 justify-content-between align-items-center">
+                                        <label class="form-label">検出対象の形状　　　</label>
+                                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                            <input type="radio" class="btn-check" name="btnradio" id="adjustParameterButtonCircle" autocomplete="off" checked>
+                                            <label class="btn btn-outline-primary" for="adjustParameterButtonCircle">　　円形　　</label>
+                                        
+                                            <input type="radio" class="btn-check" name="btnradio" id="adjustParameterButtonSquare" autocomplete="off">
+                                            <label class="btn btn-outline-primary" for="adjustParameterButtonSquare">　　矩形　　</label>
+                                        
+                                            <input type="radio" class="btn-check" name="btnradio" id="adjustParameterButtonBig" autocomplete="off">
+                                            <label class="btn btn-outline-primary" for="adjustParameterButtonBig">　　一般　　</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -225,12 +252,20 @@
         <div class="tab-pane fade" id="motionAnalyzeTab">
             <div class="row">
                 <div class="col-12 col-xxl-6">
-                    <h4 class="page-header mt-3">ストロボ表示</h4>
-                    <canvas id="storoboCanvas"  class="border"></canvas>
+                    <div class="card mt-3">
+                        <h5 class="card-header">ストロボ表示</h5>
+                        <div class="card-body p-0">
+                            <canvas id="storoboCanvas" class="img-fluid"></canvas>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12 col-xxl-6">
-                    <h4 class="page-header mt-3">軌跡表示</h4>
-                    <canvas id="trajectoryCanvas"  class="border"></canvas>
+                    <div class="card mt-3">
+                        <h5 class="card-header">軌跡表示</h5>
+                        <div class="card-body p-0">
+                            <canvas id="trajectoryCanvas"  class="img-fluid"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

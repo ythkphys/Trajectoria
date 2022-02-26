@@ -1,6 +1,6 @@
 import cv, { Mat, opencv ,Point} from "../opencv-ts/src/opencv";
-import { TrajParameter, Resource, debugMsg, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE} from "./utilities";
-import { Detector, DetectType} from "./detector";
+import { TrajParameter, Resource, DetectType, debugMsg, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE} from "./utilities";
+import { Detector} from "./detector";
 import { TrajMotionData } from "./trajMotionData";
 
 export class ImageAnalyzer {
@@ -134,6 +134,10 @@ export class ImageAnalyzer {
         this.p.threshold = thresh;
         this.p.autoThreshold = auto;
         return (this.p.threshold !== oldThresh) || (this.p.autoThreshold !== oldAuto);
+    }
+
+    setDetectType(detectType: DetectType) {
+        this.detector.setDetectType(detectType);
     }
 
     validateVideoInput(): string{
