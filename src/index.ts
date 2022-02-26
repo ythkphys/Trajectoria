@@ -96,10 +96,11 @@ window.addEventListener('DOMContentLoaded', () => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
         rangeText[str] = document.getElementById(`range${str}Text`) as HTMLElement;
     });
-});
-window.addEventListener('load', () => {
     document.getElementById("page").hidden = false;
     document.getElementById("loading-wrapper").hidden = true;
+});
+window.addEventListener('load_', () => {
+
     document.documentElement.style.setProperty("--max-picture-size", `${MAX_PICTURE_SIZE}px`);
     phase.changeTo(Phase.VideoNotLoaded);
 

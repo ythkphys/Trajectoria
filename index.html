@@ -50,12 +50,14 @@
                 グラフ出力
             </button>
         </li>
+        <!--
         <li class="nav-item">
             <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#debugTab">
                 <span class="bi bi-exclamation-square-fill"></span>
                 デバッグ用
             </button>
         </li>
+        -->
     </ul>
     
     <!--モーダル-->
@@ -163,11 +165,11 @@
             <div class="row">
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">背景の確認</h4>
-                    <canvas id="adjustParametersCanvas" class="figureMax"></canvas>                   
+                    <canvas id="adjustParametersCanvas" class="border"></canvas>                   
                 </div>
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">前景マスクの確認</h4>
-                    <canvas id="binaryCheckCanvas" class="figureMax"></canvas>
+                    <canvas id="binaryCheckCanvas"  class="border"></canvas>
                 </div>
             </div>
             <div class="col-12 col-xxl-6">
@@ -192,11 +194,11 @@
             <div class="row">
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">ストロボ表示</h4>
-                    <canvas id="storoboCanvas" class="figureMax"></canvas>
+                    <canvas id="storoboCanvas"  class="border"></canvas>
                 </div>
                 <div class="col-12 col-xxl-6">
                     <h4 class="page-header mt-3">軌跡表示</h4>
-                    <canvas id="trajectoryCanvas" class="figureMax"></canvas>
+                    <canvas id="trajectoryCanvas"  class="border"></canvas>
                 </div>
             </div>
         </div>
@@ -218,7 +220,7 @@
             </div>
         </div>
 
-        <!--debug-->
+        <!--debug
         <div class="tab-pane fade" id="debugTab">
             <h3 class="page-header my-3">デバッグMessage</h3>
             <div id="debugMessage"></div>
@@ -232,6 +234,7 @@
             <canvas id="canvas5" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
             <canvas id="canvas6" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
         </div>
+        -->
     </div>
 </div>
 </body>
