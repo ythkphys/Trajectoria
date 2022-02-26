@@ -12,8 +12,10 @@ let commonProgressbar: HTMLElement;
 let selectedFile: HTMLInputElement;
 let videoInputVideo: HTMLVideoElement;
 let videoCanvas: HTMLCanvasElement;
-let adjustParametersCanvas: HTMLCanvasElement;
-let binaryCheckCanvas: HTMLCanvasElement;
+let adjustParametersBackCanvas: HTMLCanvasElement;
+let adjustParametersSrcCanvas: HTMLCanvasElement;
+let adjustParametersMaskCanvas: HTMLCanvasElement;
+let adjustParametersDetectedCanvas: HTMLCanvasElement;
 let storoboCanvas: HTMLCanvasElement;
 let trajectoryCanvas: HTMLCanvasElement;
 let xtGraphCanvas: HTMLCanvasElement;
@@ -22,11 +24,12 @@ let videoInputTabButton: HTMLButtonElement;
 let adjustParametersTabButton: HTMLButtonElement;
 let motionAnalyzeTabButton: HTMLButtonElement;
 let outputGraphTabButton: HTMLButtonElement;
-let debugTabButton: HTMLButtonElement;
 
 let rangeThreshInput: HTMLInputElement;
 let checkThreshInput:HTMLInputElement;
 let rangeThreshText: HTMLElement;
+let rangeCurrentTimeInput: HTMLInputElement;
+let rangeCurrentTimeText: HTMLElement;
 
 const rangeInput: { [str: string]: HTMLInputElement } = {};
 const rangeText: { [str: string]: HTMLElement } = {};
@@ -76,8 +79,10 @@ window.addEventListener('DOMContentLoaded', () => {
     selectedFile = document.getElementById("selectedFile") as HTMLInputElement;
     videoInputVideo = document.getElementById("videoInput") as HTMLVideoElement;
     videoCanvas = document.getElementById("videoCanvas") as HTMLCanvasElement;
-    adjustParametersCanvas = document.getElementById("adjustParametersCanvas") as HTMLCanvasElement;
-    binaryCheckCanvas = document.getElementById("binaryCheckCanvas") as HTMLCanvasElement;
+    adjustParametersBackCanvas = document.getElementById("adjustParametersBackCanvas") as HTMLCanvasElement;
+    adjustParametersSrcCanvas = document.getElementById("adjustParametersSrcCanvas") as HTMLCanvasElement;
+    adjustParametersMaskCanvas = document.getElementById("adjustParametersMaskCanvas") as HTMLCanvasElement;
+    adjustParametersDetectedCanvas = document.getElementById("adjustParametersDetectedCanvas") as HTMLCanvasElement;
     trajectoryCanvas = document.getElementById("trajectoryCanvas") as HTMLCanvasElement;
     storoboCanvas = document.getElementById("storoboCanvas") as HTMLCanvasElement;
     xtGraphCanvas = document.getElementById("xtGraphCanvas") as HTMLCanvasElement;
@@ -86,11 +91,12 @@ window.addEventListener('DOMContentLoaded', () => {
     adjustParametersTabButton = document.querySelector('button[data-bs-target="#adjustParametersTab"]');
     motionAnalyzeTabButton = document.querySelector('button[data-bs-target="#motionAnalyzeTab"]');
     outputGraphTabButton = document.querySelector('button[data-bs-target="#outputGraphTab"]');
-    debugTabButton = document.querySelector('button[data-bs-target="#debugTab"]');
 
     rangeThreshInput = document.getElementById("rangeThreshInput") as HTMLInputElement;
     checkThreshInput = document.getElementById("checkThreshInput") as HTMLInputElement;
     rangeThreshText = document.getElementById("rangeThreshText");
+    rangeCurrentTimeInput = document.getElementById("rangeCurrentTimeInput") as HTMLInputElement;
+    rangeCurrentTimeText = document.getElementById("rangeCurrentTimeText");
 
     ["Up", "Down", "Left", "Right"].forEach(str => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
@@ -99,12 +105,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("page").hidden = false;
     document.getElementById("loading-wrapper").hidden = true;
 });
-window.addEventListener('load_', () => {
-
+window.addEventListener('load', () => {
     document.documentElement.style.setProperty("--max-picture-size", `${MAX_PICTURE_SIZE}px`);
     phase.changeTo(Phase.VideoNotLoaded);
-
-   
     updateInputVideo();
 
     ["Up", "Down", "Left", "Right"].forEach(str => {
@@ -149,7 +152,7 @@ window.addEventListener('load_', () => {
         "VideInputTabShown", false,
         async (isChanceling) => {
             imageAnalyzer?.p.videoElement.pause();
-            imageAnalyzer?.setCurrentTimeAsync(0);
+            await imageAnalyzer?.setCurrentTimeAsync(0);
             updateInputVideo();
         }
     ));
@@ -168,7 +171,7 @@ window.addEventListener('load_', () => {
                     bootstrap.Tab.getOrCreateInstance(videoInputTabButton).show();
                 }
                 else if (phase.lessThan(Phase.ObjectMasked)) {
-                    await updateCheckBackgroundAsync();
+                    await updateAdjustParametersAsync();
                 }
             }
         }
@@ -237,11 +240,11 @@ window.addEventListener('load_', () => {
         async (isChanceling) => {
             const value = rangeThreshInput.value;
             rangeThreshText.textContent = value
-            const changed = imageAnalyzer.setThresh(parseInt(rangeThreshInput.value), checkThreshInput.checked);
+            const changed = imageAnalyzer.setThresh(parseInt(value), checkThreshInput.checked);
             if (changed) {
                 phase.reduceTo(Phase.BackgroundDetected);
                 if (phase.equalsTo(Phase.BackgroundDetected)) {
-                    await updateCheckBackgroundAsync();       
+                    await updateAdjustParametersAsync();       
                 }
             }
         })
@@ -256,7 +259,22 @@ window.addEventListener('load_', () => {
             if (changed) {
                 phase.reduceTo(Phase.BackgroundDetected);
                 if (phase.equalsTo(Phase.BackgroundDetected)) {
-                    await updateCheckBackgroundAsync();
+                    await updateAdjustParametersAsync();
+                }
+            }
+        })
+    );
+
+    rangeCurrentTimeInput.addEventListener("change", (e) => AsyncCommand.subscribe(
+        "rangeCurrentTimeInputChange", false,
+        async (isChanceling) => {
+            const value = parseFloat(rangeCurrentTimeInput.value);
+            rangeCurrentTimeText.textContent = `${value.toFixed(2)} s`;
+            const changed = await imageAnalyzer.setCurrentTimeAsync(value);
+            if (changed) {
+                phase.reduceTo(Phase.BackgroundDetected);
+                if (phase.equalsTo(Phase.BackgroundDetected)) {
+                    await updateAdjustParametersAsync();
                 }
             }
         })
@@ -326,11 +344,12 @@ async function loadVideoAsync(file: File) {
     updateInputVideo();
 }
 
-async function updateCheckBackgroundAsync() {
+async function updateAdjustParametersAsync() {
     commonProgressbar.hidden = false;
-    const barUpdate1 = (p: number) => commonProgressbar.style.width = (p * 80).toFixed() + "%";
-    const barUpdate2 = (p: number) => commonProgressbar.style.width = (p * 20 + 80).toFixed() + "%";
-    barUpdate1(0);
+    const time = imageAnalyzer.p.videoElement.currentTime;
+    rangeCurrentTimeInput.max = imageAnalyzer.p.videoDuration.toString();
+    const barUpdate = (p: number) => commonProgressbar.style.width = (p*100).toFixed() + "%";
+    barUpdate(0);
 
     checkThreshInput.checked = imageAnalyzer.p.autoThreshold;
     if (!checkThreshInput.checked) {
@@ -339,19 +358,22 @@ async function updateCheckBackgroundAsync() {
     }
 
     if (phase.lessThan(Phase.BackgroundDetected)) {
-        adjustParametersCanvas.getContext("2d").clearRect(0, 0, adjustParametersCanvas.width, adjustParametersCanvas.height);
-        await imageAnalyzer.calcBackgroundAsync(barUpdate1).then(() => {
-            cv.imshow(adjustParametersCanvas, imageAnalyzer.r.backRegionMat);
+        await imageAnalyzer.calcBackgroundAsync(barUpdate).then(() => {
+            cv.imshow(adjustParametersBackCanvas, imageAnalyzer.r.backRegionROI);
             phase.changeTo(Phase.BackgroundDetected);
         });
     }
-    await imageAnalyzer.calcBinaryCheckMatAsync(barUpdate2).then(() => {
+    await imageAnalyzer.calcBinaryCheckMatAsync(time).then(() => {
         if (checkThreshInput.checked) {
             rangeThreshText.textContent = imageAnalyzer.p.threshold.toString();
             rangeThreshInput.value = imageAnalyzer.p.threshold.toString();
         }
-        binaryCheckCanvas.getContext("2d").clearRect(0, 0, binaryCheckCanvas.width, binaryCheckCanvas.height);
-        cv.imshow(binaryCheckCanvas, imageAnalyzer.r.binaryCheckMat);
+        rangeCurrentTimeText.textContent = `${time.toFixed(2)} s`;
+        rangeCurrentTimeInput.value = time.toFixed(2);
+
+        cv.imshow(adjustParametersSrcCanvas, imageAnalyzer.r.srcROI);
+        cv.imshow(adjustParametersMaskCanvas, imageAnalyzer.r.detectedBinaryROI);
+        cv.imshow(adjustParametersDetectedCanvas, imageAnalyzer.r.detectedROI);
         phase.changeTo(Phase.ObjectMasked);
     });
     commonProgressbar.hidden = true;
@@ -382,10 +404,4 @@ async function updateOutputGraphAsync() {
 function showErrorModal(str: string) {
     document.getElementById("modalErrorText").textContent = str;
     new bootstrap.Modal(document.getElementById("modalAlert")).show();
-}
-
-function runTest() {
-    const canvases: HTMLCanvasElement[] = [];
-    document.querySelectorAll(".testcanvas").forEach(e => canvases.push(<HTMLCanvasElement>e));
-    imageAnalyzer.test(canvases);
 }

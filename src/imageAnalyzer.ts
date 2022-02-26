@@ -36,8 +36,9 @@ export class ImageAnalyzer {
         const r = this.r;
         r.cap = null;
         r.srcMat = new cv.Mat(p.targetHeight, p.targetWidth, cv.CV_8UC4);
-        r.backRegionMat = new cv.Mat();
-        r.binaryCheckMat = new cv.Mat();
+        r.backRegionROI = new cv.Mat();
+        r.detectedBinaryROI = new cv.Mat();
+        r.detectedROI = new cv.Mat();
         r.storoboMat = new cv.Mat();
         r.trajectoryMat = new cv.Mat();
         r.objectMask = new cv.Mat(p.targetHeight, p.targetWidth, cv.CV_8UC1);
@@ -72,8 +73,9 @@ export class ImageAnalyzer {
 
     dispose() {
         this.r.srcMat?.delete();
-        this.r.backRegionMat?.delete();
-        this.r.binaryCheckMat?.delete();
+        this.r.backRegionROI?.delete();
+        this.r.detectedBinaryROI?.delete();
+        this.r.detectedROI?.delete();
         this.r.storoboMat?.delete();
         this.r.trajectoryMat?.delete();
         this.r.objectMask?.delete();
@@ -84,11 +86,16 @@ export class ImageAnalyzer {
         return start + (end - start) / (NUMBER_OF_MAT_FOR_BACKGROUND - 1) * i;
     }
 
-    setCurrentTimeAsync(time: number) {
-        return new Promise((resolve,reject) => {
-            this.p.videoElement.addEventListener("seeked", resolve, { once: true });
-            this.p.videoElement.currentTime = time;
-        });
+    setCurrentTimeAsync(time: number) :Promise<boolean>{
+        if (this.p.videoElement.currentTime === time) {
+            return Promise.resolve(false);
+        }
+        else {
+            return new Promise(resolve => {
+                this.p.videoElement.addEventListener("seeked", ()=>resolve(true), { once: true });
+                this.p.videoElement.currentTime = time;
+            });
+        }
     }
 
     updateSrcFromVideoCapture(){
@@ -145,8 +152,8 @@ export class ImageAnalyzer {
 
         const currentTime = p.videoElement.currentTime;
         for (let i = 0; i < NUMBER_OF_MAT_FOR_BACKGROUND; i++) {
-            barUpdate((i + 1) / NUMBER_OF_MAT_FOR_BACKGROUND*0.2);
-            await this.setCurrentTimeAsync(this.getTime(p.startTime, p.endTime, i));
+            barUpdate((i + 1) / NUMBER_OF_MAT_FOR_BACKGROUND*0.5);
+            await this.setCurrentTimeAsync(this.getTime(p.endTime, p.startTime, i));
             r.cap.read(r.srcMat);
             const mat = new cv.Mat();
             cv.cvtColor(r.srcMat, mat, cv.COLOR_BGRA2BGR);
@@ -162,7 +169,7 @@ export class ImageAnalyzer {
         const xmax = xmin + p.region.width;
         const w = p.targetWidth;
         for (let y = ymin; y < ymax; y++) {
-            barUpdate((y - ymin) / (ymax - ymin)*0.8+0.2); 
+            barUpdate((y - ymin) / (ymax - ymin)*0.5+0.5); 
             for (let x = xmin; x < xmax; x++) {
                 const n3 = (y * w + x ) * 3;
                 const m3 = ( (y-ymin) * p.region.width + x-xmin) * 3;
@@ -179,27 +186,17 @@ export class ImageAnalyzer {
                 bdata[m3 + 2] = objMedian[2];
             }
         }
-        backRegion.copyTo(r.backRegionMat);
+        backRegion.copyTo(r.backRegionROI);
         backRegion.delete();
         sourceMat.forEach(mat => mat.delete());
-    }
-
-    async calcBinaryCheckMatAsync(barUpdate: (percent: number) => void) {
-        const [p, r] = [this.p, this.r];
-        const mat = new cv.Mat(p.region.height, p.region.width, cv.CV_8UC1, new cv.Scalar(0));
         this.detector.resetThreshList();
-        for (let i = 0; i < NUMBER_OF_MAT_FOR_BACKGROUND; i++) {
-            barUpdate( i/ (NUMBER_OF_MAT_FOR_BACKGROUND-1));
-            const time = this.getTime(p.startTime, p.endTime, i)
-            await this.setCurrentTimeAsync(time);
-            r.cap.read(r.srcMat);
-            const _ = this.detector.detectOne(p, r, time);
-            cv.bitwise_or(mat, this.detector.binaryMat2, mat);
-        }
-        mat.copyTo(r.binaryCheckMat);
-        mat.delete();
-
-        if (this.p.autoThreshold) this.p.threshold = this.detector.getAvgThresh();
+    }
+    async calcBinaryCheckMatAsync(time:number) {
+        const [p, r] = [this.p, this.r];
+        await this.setCurrentTimeAsync(time);
+        r.cap.read(r.srcMat);
+        const _ = this.detector.detectOne(p, r, time, false);
+       if (this.p.autoThreshold) this.p.threshold = this.detector.getAvgThresh();
     }
 
     async calcMotionDataAsync(barUpdate: (percent:number) => void) {
@@ -210,6 +207,7 @@ export class ImageAnalyzer {
 
         let needInit = true;
         let storoboCnt = 0;
+        this.detector.lastDetectedPoint = undefined;
         const storoboMax = Math.floor(N / 10);
         data.targetH = p.targetHeight;
         for (let i = 0; i < N; i++,storoboCnt++) {
@@ -217,7 +215,7 @@ export class ImageAnalyzer {
             const time = p.startTime + (p.endTime - p.startTime) * i / (N - 1);
             await this.setCurrentTimeAsync(time);
             r.cap.read(r.srcMat);
-            const txy = this.detector.detectOne(p, r, time);
+            const txy = this.detector.detectOne(p, r, time, true);
             if (txy) {
                 const [t, x, y] = txy;
                 data.addTXY(txy);
@@ -237,21 +235,6 @@ export class ImageAnalyzer {
                     }
                 }
             }
-        }
-    }
-
-    async test(canvases: HTMLCanvasElement[]) {
-        const [p, r] = [this.p, this.r];
-        const N = 30;
-        for (let i = 0; i < N; i++){
-            const time = p.startTime + (p.endTime-p.startTime) * i / (N-1);
-            await this.setCurrentTimeAsync(time);
-            r.cap.read(r.srcMat);
-
-            this.detector.detectOne(p, r, time);
-            cv.imshow(canvases[0], this.detector.diffGrayMat2);
-            cv.imshow(canvases[1], this.detector.binaryMat2);
-            cv.imshow(canvases[2], this.detector.outputMat);
         }
     }
 }

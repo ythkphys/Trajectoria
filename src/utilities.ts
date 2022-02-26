@@ -28,19 +28,18 @@ export type TrajParameter = {
 
 export type Resource = {
     cap?: opencv.VideoCapture;
-    srcMat?: Mat;
-    backRegionMat?: Mat;
-    binaryCheckMat?: Mat;
-    objectMask?: Mat;
-    storoboMat?: Mat;
-    trajectoryMat?: Mat;
+    srcMat?: Mat;           // 動画から読み込んだもの
+    srcROI?: Mat;           // 動画から読み込んだもの：ROI
+    backRegionROI?: Mat;    // 検出した背景：ROI
+    detectedBinaryROI?: Mat;// 輪郭抽出前の2値化画像：ROI
+    detectedROI?: Mat;      // 検出物体を強調した画像:ROI
+    objectMask?: Mat;       // 検出した輪郭をもとに作ったマスク
+    storoboMat?: Mat;       // ストロボ画像
+    trajectoryMat?: Mat;    // 軌跡を描いた画像
 };
 
 export type TXY = [number,number,number];
 
 export function debugMsg(message: any) {
-    const msgP = document.createElement("p");
-    msgP.textContent = message;
-    document.getElementById("debugMessage").appendChild(msgP);
     console.log(message);
 }

@@ -46,18 +46,10 @@
         </li>
         <li class="nav-item">
             <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#outputGraphTab">
-                <span class="bi bi-star-fill"></span>
+                <span class="bi bi-graph-up"></span>
                 グラフ出力
             </button>
         </li>
-        <!--
-        <li class="nav-item">
-            <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#debugTab">
-                <span class="bi bi-exclamation-square-fill"></span>
-                デバッグ用
-            </button>
-        </li>
-        -->
     </ul>
     
     <!--モーダル-->
@@ -164,25 +156,65 @@
         <div class="tab-pane fade" id="adjustParametersTab">
             <div class="row">
                 <div class="col-12 col-xxl-6">
-                    <h4 class="page-header mt-3">背景の確認</h4>
-                    <canvas id="adjustParametersCanvas" class="border"></canvas>                   
+                    <div class="card mt-3">
+                        <ul class="nav nav-pills card-header">
+                            <li class="nav-item">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#adjustParametersBackPill">背景画像</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adjustParametersSrcPill">解析対象</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adjustParametersMaskPill">前景マスク</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#adjustParametersDetectedPill">検出結果</button>
+                            </li>
+                        </ul>
+                        <div class="card-body tab-content">
+                            <div class="tab-pane fade in show active" id="adjustParametersBackPill">
+                                <canvas id="adjustParametersBackCanvas" class="border img-fluid"></canvas>
+                            </div>
+                            <div class="tab-pane fade" id="adjustParametersSrcPill">
+                                <canvas id="adjustParametersSrcCanvas" class="border img-fluid"></canvas>
+                            </div>  
+                            <div class="tab-pane fade" id="adjustParametersMaskPill">
+                                <canvas id="adjustParametersMaskCanvas" class="border img-fluid"></canvas>
+                            </div>
+                            <div class="tab-pane fade" id="adjustParametersDetectedPill">
+                                <canvas id="adjustParametersDetectedCanvas" class="border img-fluid"></canvas>
+                            </div>
+                            <div class="d-flex py-2 justify-content-start align-items-center">
+                                <label style="min-width: 2rem;">時間</label>
+                                <input type="range" class="form-range flex-fill mx-3" step="0.01" id="rangeCurrentTimeInput">
+                                <div class="alert alert-primary my-0 p-2" id="rangeCurrentTimeText" style="min-width: 5rem;text-align: right;"></div>
+                            </div>
+                        </div>
+                    </div>  
                 </div>
                 <div class="col-12 col-xxl-6">
-                    <h4 class="page-header mt-3">前景マスクの確認</h4>
-                    <canvas id="binaryCheckCanvas"  class="border"></canvas>
-                </div>
-            </div>
-            <div class="col-12 col-xxl-6">
-                <div class="card mt-3" id="adjustParameterCardSpace">
-                    <h5 class="card-header">閾値の設定</h5>
-                    <div class="card-body">
-                        <div class="d-flex py-2 justify-content-start align-items-center">
-                            <div class="form-check form-switch w-25">
-                                <input class="form-check-input" type="checkbox" id="checkThreshInput" checked>
-                                <label class="form-check-label" for="checkThreshInput">自動計算</label>
-                            </div>  
-                            <input type="range" class="form-range flex-fill mx-3" min="0"  max="255" disabled id="rangeThreshInput">
-                            <div class="alert alert-primary my-0 p-2" id="rangeThreshText">000</div>
+                    <div class="accordion mt-3" id="adjustParametersAccordion">
+                        <div class="accordion-item">
+                            <h5 class="accordion-header" id="adjustParametersThreshHeading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#adjustParametersThreshCollapse" aria-expanded="true" 
+                                    aria-controls="adjustParametersThreshCollapse">
+                                    閾値の設定
+                                </button>
+                            </h5>
+                            <div id="adjustParametersThreshCollapse" class="accordion-collapse collapse"
+                                aria-labelledby="adjustParametersThreshHeading">
+                                <div class="accordion-body row gx-5">
+                                    <div class="d-flex py-2 justify-content-start align-items-center">
+                                        <div class="form-check form-switch w-25">
+                                            <input class="form-check-input" type="checkbox" id="checkThreshInput" checked>
+                                            <label class="form-check-label" for="checkThreshInput">自動計算</label>
+                                        </div>
+                                        <input type="range" class="form-range flex-fill mx-3" min="0" max="255" disabled id="rangeThreshInput">
+                                        <div class="alert alert-primary my-0 p-2" id="rangeThreshText" style="min-width: 3rem;text-align: right;"></div>
+                                    </div>
+                               </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -219,22 +251,6 @@
                 </div>
             </div>
         </div>
-
-        <!--debug
-        <div class="tab-pane fade" id="debugTab">
-            <h3 class="page-header my-3">デバッグMessage</h3>
-            <div id="debugMessage"></div>
-            
-            <h3 class="page-header my-3">デバッグCanvas</h3>
-            <canvas id="canvas0" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-            <canvas id="canvas1" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-            <canvas id="canvas2" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-            <canvas id="canvas3" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-            <canvas id="canvas4" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-            <canvas id="canvas5" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-            <canvas id="canvas6" class="col-md-6 figureMax border border-2 testcanvas"></canvas>
-        </div>
-        -->
     </div>
 </div>
 </body>
