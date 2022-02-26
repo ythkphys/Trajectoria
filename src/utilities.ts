@@ -3,7 +3,9 @@ import cv, { Mat, Rect, Point, opencv} from "../opencv-ts/src/opencv";
 export const MAX_PICTURE_SIZE = 640;
 export const NUMBER_OF_MAT_FOR_BACKGROUND = 7;
 
-export const Offset = (p: Point, offx: number, offy: number) => new cv.Point(p.x + offx, p.y + offy);
+export const offset = (p: Point, offx: number, offy: number) => new cv.Point(p.x + offx, p.y + offy);
+export const distance2 = (p1: Point, p2: Point) => (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
+
 
 export type Circle = {
     center: Point,

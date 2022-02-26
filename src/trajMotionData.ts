@@ -4,14 +4,16 @@ import { TXY } from "./utilities";
 type XY = { x: number, y: number };
 export class TrajMotionData{
     targetH: number;
-    readonly plotdata: TXY[] = [];
+    private readonly plotdata: TXY[] = [];
+    private chartX: Chart = undefined;
 
     addTXY([rawt,rawx,rawy]:TXY) {
         this.plotdata.push([rawt, rawx, this.targetH-rawy]);
     }
     
-    getChartX(canvas:HTMLCanvasElement) { 
-        return new Chart(canvas, {
+    getChartX(canvas: HTMLCanvasElement) {
+        this.chartX?.destroy();
+        this.chartX = new Chart(canvas, {
             type: "scatter",
             data: {
                 datasets: [
@@ -60,6 +62,7 @@ export class TrajMotionData{
                 }
             }
         });
+        return this.chartX;
     }
 
     downloadCSVData() {

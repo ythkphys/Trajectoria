@@ -1,5 +1,6 @@
-import cv, { Mat, opencv, Scalar, Rect, MatVector } from "../opencv-ts/src/opencv";
-import { TrajParameter, Resource, Offset,TXY ,Circle} from "./utilities";
+import { CovarFlags } from "../opencv-ts/src/core/Core";
+import cv, { Mat, opencv, Scalar, Rect, MatVector, Point } from "../opencv-ts/src/opencv";
+import { TrajParameter, Resource, offset,TXY ,Circle, distance2} from "./utilities";
 
 export type DetectType = "Circle" | "Big";
 
@@ -15,7 +16,8 @@ export class Detector{
     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(3, 3), new cv.Point(-1, -1));
     contours = new cv.MatVector();
     hierarchy = new cv.Mat();
-    threahList: number[] = [];
+    private threahList: number[] = [];
+    private lastDetectedPoint: Point = undefined;
 
     protected dispos: Array<Mat|MatVector>; 
     
@@ -79,20 +81,27 @@ export class Detector{
         let enkei = 0;
         let circle: Circle;
         let countour: Mat;
-        const radiusThresh = 5;
+        const radiusMinThresh = 5;
+        const maxDistanceToDetect = 30;
         for (let i = 0; i < this.contours.size(); i++) {
             const cnt = this.contours.get(i);
             const length = cv.arcLength(cnt, true);
             const area = cv.contourArea(cnt);
             const en = 4 * Math.PI * area / length ** 2;
             const ci = <Circle><unknown>cv.minEnclosingCircle(cnt);
-            if (en > enkei && radiusThresh < ci.radius) {
+            let update = en > enkei;
+            update &&= radiusMinThresh < ci.radius;
+            if (this.lastDetectedPoint) {
+                update &&= distance2(this.lastDetectedPoint, ci.center) < maxDistanceToDetect ** 2;
+            }
+            if (update) {
                 enkei = en;
                 circle = ci;
                 countour = cnt;
                 index = i;
             }
         }
+
         if (countour) {
             const offX = p.region.x;
             const offY = p.region.y;
@@ -108,11 +117,12 @@ export class Detector{
                 this.hierarchy, 1, new cv.Point(offX, offY));
             //*/
             cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), new cv.Scalar(0), cv.FILLED);
-            cv.circle(r.objectMask, Offset(circle.center, offX, offY), circle.radius, new cv.Scalar(255), cv.FILLED);
-
+            cv.circle(r.objectMask, offset(circle.center, offX, offY), circle.radius, new cv.Scalar(255), cv.FILLED);
+            this.lastDetectedPoint = circle.center;
             return [time, circle.center.x + offX, circle.center.y + offY];
         }
         else {
+            this.lastDetectedPoint = undefined;
             return undefined;
         }
     }
