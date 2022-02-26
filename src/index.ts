@@ -71,10 +71,7 @@ const AsyncCommand = {
     }
 };
 
-window.addEventListener('load', () => {
-    phase.changeTo(Phase.VideoNotLoaded);
-    document.documentElement.style.setProperty("--max-picture-size", `${MAX_PICTURE_SIZE}px`);
-    
+window.addEventListener('DOMContentLoaded', () => { 
     commonProgressbar = document.getElementById("commonProgressbar");
     selectedFile = document.getElementById("selectedFile") as HTMLInputElement;
     videoInputVideo = document.getElementById("videoInput") as HTMLVideoElement;
@@ -99,6 +96,14 @@ window.addEventListener('load', () => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
         rangeText[str] = document.getElementById(`range${str}Text`) as HTMLElement;
     });
+});
+window.addEventListener('load', () => {
+    document.getElementById("page").hidden = false;
+    document.getElementById("loading-wrapper").hidden = true;
+    document.documentElement.style.setProperty("--max-picture-size", `${MAX_PICTURE_SIZE}px`);
+    phase.changeTo(Phase.VideoNotLoaded);
+
+   
     updateInputVideo();
 
     ["Up", "Down", "Left", "Right"].forEach(str => {
