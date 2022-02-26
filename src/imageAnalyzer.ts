@@ -18,13 +18,14 @@ export class ImageAnalyzer {
         const p = this.p;
         p.trueWidth  = video.videoWidth;
         p.trueHeight = video.videoHeight;
-        let dia : number;
-        if (Math.max(p.trueHeight, p.trueWidth) <= MAX_PICTURE_SIZE)// 小さい
-            dia = 1;
-        else if (p.trueHeight < p.trueWidth)//横長
-            dia = MAX_PICTURE_SIZE / p.trueWidth 
-        else
-            dia = MAX_PICTURE_SIZE / p.trueHeight;
+        const dia = (() =>{
+            if (Math.max(p.trueHeight, p.trueWidth) <= MAX_PICTURE_SIZE)// 小さい
+                return 1;
+            else if (p.trueHeight < p.trueWidth)//横長
+                return  MAX_PICTURE_SIZE / p.trueWidth
+            else
+                return  MAX_PICTURE_SIZE / p.trueHeight;
+        })();
         p.targetWidth = Math.floor(p.trueWidth * dia);
         p.targetHeight = Math.floor(p.trueHeight * dia);
         p.videoDuration = video.duration;
@@ -95,15 +96,15 @@ export class ImageAnalyzer {
         this.r.cap.read(this.r.srcMat); 
     }
     
-    setStartTime() {
+    setStartTime(reset:boolean) {
         const oldtime = this.p.startTime;
-        this.p.startTime = this.p.videoElement.currentTime;
+        this.p.startTime = reset ? 0: this.p.videoElement.currentTime;
         return this.p.startTime !== oldtime;
     }
 
-    setEndTime(){
+    setEndTime(reset: boolean){
         const oldtime = this.p.endTime;
-        this.p.endTime = this.p.videoElement.currentTime;
+        this.p.endTime = reset ? this.p.videoElement.duration : this.p.videoElement.currentTime;
         return this.p.endTime !== oldtime;
     }
 

@@ -202,33 +202,28 @@ window.addEventListener('load', () => {
         })
     );
     
-    document.getElementById("startTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe(
-        "startTimeSetButtonClick", false,
-        async (isChanceling) => {
-            if (imageAnalyzer) {
-                const changed = imageAnalyzer.setStartTime();
-                if (changed) phase.reduceTo(Phase.VideoLoaded);
-            }
-            else {
-                showErrorModal("動画ファイルが選択されていません");
-            }
-            updateInputVideo();
-        })
-    );
+    ["startTimeSetButton", "endTimeSetButton", "startTimeClearButton", "endTimeClearButton"].forEach(id => { 
+        document.getElementById(id).addEventListener("click", () => AsyncCommand.subscribe(
+            id+"Click", false,
+            async (isChanceling) => {
+                if (imageAnalyzer) {
+                    let changed: boolean;
+                    switch (id) {
+                        case "startTimeSetButton": changed = imageAnalyzer.setStartTime(false); break;
+                        case "endTimeSetButton": changed = imageAnalyzer.setEndTime(false); break;
+                        case "startTimeClearButton": changed = imageAnalyzer.setStartTime(true); break;
+                        case "endTimeClearButton": changed = imageAnalyzer.setEndTime(true); break;
+                    }
+                    if (changed) phase.reduceTo(Phase.VideoLoaded);
+                }
+                else {
+                    showErrorModal("動画ファイルが選択されていません");
+                }
+                updateInputVideo();
+            })
+        );
 
-    document.getElementById("endTimeSetButton").addEventListener("click", () => AsyncCommand.subscribe(
-        "endTimeSetButtonClick", false,
-        async (isChanceling) => {
-            if (imageAnalyzer) {
-                const changed = imageAnalyzer.setEndTime();
-                if (changed) phase.reduceTo(Phase.VideoLoaded);
-            }
-            else {
-                showErrorModal("動画ファイルが選択されていません");
-            }
-            updateInputVideo();
-        })
-    );
+    });
 
     /* adjustParameters event */
     rangeThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
@@ -299,8 +294,7 @@ function updateInputVideo() {
     const hideVideInputContent = phase.lessThan(Phase.VideoLoaded);
     videoInputVideo.hidden = hideVideInputContent;
     videoCanvas.hidden = hideVideInputContent;
-    document.getElementById("videoInputCardTime").hidden = hideVideInputContent;
-    document.getElementById("videoInputCardSpace").hidden = hideVideInputContent;
+    document.getElementById("videoInputAccordion").hidden = hideVideInputContent;
 }
 
 async function loadVideoAsync(file: File) {

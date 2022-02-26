@@ -85,55 +85,74 @@
                 </div>
 
                 <div class="col-12 col-xxl-6">
-                    <div class="card" id="videoInputCardTime">
-                        <h5 class="card-header">解析範囲(時間)の設定</h5>
-                        <div class="card-body">
-                            <div class="row gx-5">
-                                <div class="col py-1 d-flex justify-content-start align-items-center">
-                                    <div class="pe-2">開始時間:</div>
-                                    <div class="alert alert-primary my-0 p-2 flex-fill" style="text-align: center;" id="startTimeText"></div>
-                                    <button class="btn btn-outline-primary btn-sm" id="startTimeSetButton">
-                                        <span class="bi bi-check"></span>
-                                    </button>
-                                </div>
-                                <div class="col py-1 d-flex justify-content-start align-items-center">
-                                    <div class="pe-2">終了時間:</div>
-                                    <div class="alert alert-primary my-0 p-2 my-0 flex-fill" style="text-align: center;" id="endTimeText"></div>
-                                    <button class="btn btn-outline-primary btn-sm" id="endTimeSetButton">
-                                        <span class="bi bi-check"></span>
-                                    </button>
+                    <div class="accordion" id="videoInputAccordion">
+                        <div class="accordion-item">
+                            <h5 class="accordion-header" id="videoInputTimeHeading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#videoInputTimeCollapse" aria-expanded="true" aria-controls="videoInputTimeCollapse">
+                                    解析範囲(時間)の設定
+                                </button>
+                            </h5>
+                            <div id="videoInputTimeCollapse" class="accordion-collapse collapse show"
+                                aria-labelledby="videoInputTimeHeading">
+                                <div class="accordion-body row gx-5">
+                                    <div class="col py-1 d-flex align-items-center">
+                                        <div>開始時間:</div>
+                                        <div class="alert alert-primary my-0 p-2 mx-2 flex-fill" style="text-align: center;" id="startTimeText">000</div>
+                                        <div class="btn-group align-self-stretch" role="group">
+                                            <button class="btn btn-primary btn-sm" id="startTimeSetButton">セット</button>
+                                            <button class="btn btn-outline-primary btn-sm" id="startTimeClearButton">クリア</button>
+                                        </div>
+                                    </div>
+                                    <div class="col py-1 d-flex align-items-center">
+                                        <div>終了時間:</div>
+                                        <div class="alert alert-primary my-0 p-2 mx-2 flex-fill" style="text-align: center;" id="endTimeText">000</div>
+                                        <div class="btn-group align-self-stretch" role="group">
+                                            <button class="btn btn-primary btn-sm" id="endTimeSetButton">セット</button>
+                                            <button class="btn btn-outline-primary btn-sm" id="endTimeClearButton">クリア</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card mt-3" id="videoInputCardSpace">
-                        <h5 class="card-header">解析範囲(空間)の設定</h5>
-                        <div class="card-body">
-                            <div class="d-flex py-2 justify-content-start align-items-center">
-                                <label class="form-label">上</label>
-                                <input type="range" class="form-range flex-fill mx-3" id="rangeUpInput">
-                                <div class="alert alert-primary my-0 p-2" id="rangeUpText">000</div>
-                            </div>
-                            <div class="d-flex py-2 justify-content-start">
-                                <label class="form-label">下</label>
-                                <input type="range" class="form-range flex-fill mx-3" id="rangeDownInput">
-                                <div class="alert alert-primary my-0 p-2" id="rangeDownText">000</div>
-                            </div>
-                            <div class="d-flex py-2 justify-content-start">
-                                <label class="form-label">左</label>
-                                <input type="range" class="form-range flex-fill mx-3" id="rangeLeftInput">
-                                <div class="alert alert-primary my-0 p-2" id="rangeLeftText">000</div>
-                            </div>
-                            <div class="d-flex py-2 justify-content-start">
-                                <label class="form-label">右</label>
-                                <input type="range" class="form-range flex-fill mx-3" id="rangeRightInput">
-                                <div class="alert alert-primary my-0 p-2"  id="rangeRightText">000</div>
+                        <div class="accordion-item">
+                            <h5 class="accordion-header" id="videoInputSpaceHeading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#videoInputSpaceCollapse" aria-expanded="true" aria-controls="videoInputSpaceCollapse">
+                                    解析範囲(空間)の設定
+                                </button>
+                            </h5>
+                            <div id="videoInputSpaceCollapse" class="accordion-collapse collapse show"
+                                aria-labelledby="videoInputSpaceHeading">
+                                <div class="accordion-body row gx-5">
+                                    <div class="d-flex py-2 justify-content-start align-items-center">
+                                        <label class="form-label">上</label>
+                                        <input type="range" class="form-range flex-fill mx-3" id="rangeUpInput">
+                                        <div class="alert alert-primary my-0 p-2" id="rangeUpText" style="min-width: 3rem;text-align: right;"></div>
+                                    </div>
+                                    <div class="d-flex py-2 justify-content-start">
+                                        <label class="form-label">下</label>
+                                        <input type="range" class="form-range flex-fill mx-3" id="rangeDownInput">
+                                        <div class="alert alert-primary my-0 p-2" id="rangeDownText" style="min-width: 3rem;text-align: right;"></div>
+                                    </div>
+                                    <div class="d-flex py-2 justify-content-start">
+                                        <label class="form-label">左</label>
+                                        <input type="range" class="form-range flex-fill mx-3" id="rangeLeftInput">
+                                        <div class="alert alert-primary my-0 p-2" id="rangeLeftText" style="min-width: 3rem;text-align: right;"></div>
+                                    </div>
+                                    <div class="d-flex py-2 justify-content-start">
+                                        <label class="form-label">右</label>
+                                        <input type="range" class="form-range flex-fill mx-3" id="rangeRightInput">
+                                        <div class="alert alert-primary my-0 p-2" id="rangeRightText" style="min-width: 3rem;text-align: right;"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <!--adjustParametersCheck-->
         <div class="tab-pane fade" id="adjustParametersTab">
             <div class="row">
