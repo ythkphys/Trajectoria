@@ -3,17 +3,34 @@ import { TXY } from "./utilities";
 
 type XY = { x: number, y: number };
 export class TrajMotionData{
-    targetH: number;
-    private readonly plotdata: TXY[] = [];
+    private targetH: number;
+    private plotdata: TXY[] = [];
     private chartX: Chart = undefined;
+    private getGraphDataX(): XY[] {
+        return this.plotdata.map(([T, X, _]) => { return { x: T, y: X }; });
+    }
 
+    private getGraphDataY(): XY[] {
+        return this.plotdata.map(([T, _, Y]) => { return { x: T, y: Y }; });
+    }
+    
+    reset(targetH: number) {
+        this.targetH = targetH;
+        this.plotdata = [];
+        this.chartX?.destroy();
+
+    }
+    dispose() {
+        this.targetH = 0;
+        this.plotdata = [];
+        this.chartX?.destroy();
+     }
     addTXY([rawt,rawx,rawy]:TXY) {
         this.plotdata.push([rawt, rawx, this.targetH-rawy]);
     }
     
     getChartX(canvas: HTMLCanvasElement) {
-        this.chartX?.destroy();
-        this.chartX = new Chart(canvas, {
+       this.chartX = new Chart(canvas, {
             type: "scatter",
             data: {
                 datasets: [
@@ -77,13 +94,5 @@ export class TrajMotionData{
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
-    }
-
-    private getGraphDataX(): XY[] { 
-        return this.plotdata.map(([T, X, _]) => { return { x: T, y: X };});
-    }
-    
-    private getGraphDataY(): XY[] {
-        return this.plotdata.map(([T, _, Y]) => { return { x: T, y: Y }; });
     }
 }

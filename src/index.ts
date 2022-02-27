@@ -345,6 +345,7 @@ async function loadVideoAsync(file: File) {
     const spinner = document.getElementById("videoInputSpinner");
     spinner.hidden = false;
     try {
+        if (imageAnalyzer) imageAnalyzer.dispose();
         imageAnalyzer = await ImageAnalyzer.createAsync(videoInputVideo, file);
         await imageAnalyzer.setCurrentTimeAsync(0);
         phase.changeTo(Phase.VideoLoaded);

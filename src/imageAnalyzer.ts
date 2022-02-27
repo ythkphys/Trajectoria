@@ -80,6 +80,7 @@ export class ImageAnalyzer {
         this.r.trajectoryMat?.delete();
         this.r.objectMask?.delete();
         this.detector.dispose();
+        this.data.dispose();
     }
 
     getTime(start: number, end: number, i: number) {
@@ -205,7 +206,7 @@ export class ImageAnalyzer {
 
     async calcMotionDataAsync(barUpdate: (percent:number) => void) {
         const [p, r, data] = [this.p, this.r, this.data];
-        const N = 100;
+        const N = 101;
         let p1: Point;
         let p2: Point;
 
@@ -213,7 +214,7 @@ export class ImageAnalyzer {
         let storoboCnt = 0;
         this.detector.lastDetectedPoint = undefined;
         const storoboMax = Math.floor(N / 10);
-        data.targetH = p.targetHeight;
+        data.reset( p.targetHeight);
         for (let i = 0; i < N; i++,storoboCnt++) {
             barUpdate(i / (N-1));
             const time = p.startTime + (p.endTime - p.startTime) * i / (N - 1);
