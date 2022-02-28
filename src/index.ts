@@ -20,6 +20,7 @@ let adjustParametersDetectedCanvas: HTMLCanvasElement;
 let storoboCanvas: HTMLCanvasElement;
 let trajectoryCanvas: HTMLCanvasElement;
 let xtGraphCanvas: HTMLCanvasElement;
+let vtGraphCanvas: HTMLCanvasElement;
 
 let videoInputTabButton: HTMLButtonElement;
 let adjustParametersTabButton: HTMLButtonElement;
@@ -87,6 +88,7 @@ window.addEventListener('DOMContentLoaded', () => {
     trajectoryCanvas = document.getElementById("trajectoryCanvas") as HTMLCanvasElement;
     storoboCanvas = document.getElementById("storoboCanvas") as HTMLCanvasElement;
     xtGraphCanvas = document.getElementById("xtGraphCanvas") as HTMLCanvasElement;
+    vtGraphCanvas = document.getElementById("vtGraphCanvas") as HTMLCanvasElement;
 
     videoInputTabButton = document.querySelector('button[data-bs-target="#videoInputTab"]');
     adjustParametersTabButton = document.querySelector('button[data-bs-target="#adjustParametersTab"]');
@@ -295,17 +297,20 @@ window.addEventListener('load', () => {
     });
     /* motionAnalyzeEvent */
     /* outputGraphEvent */
-    document.getElementById("saveXcsvbutton").addEventListener("click", () => AsyncCommand.subscribe(
-        "saveXcsvbuttonClick", false,
-        async (isChanceling) => {
-            if (phase.lessThan(Phase.MotionAnaized)) {
-                showErrorModal("グラフが表示されるまで待ってください。");
-            }
-            else {
-                imageAnalyzer.data.downloadCSVData();
-            }
-        })
-    );
+    ["X", "V"].forEach(str => { 
+        document.getElementById(`save${str}csvbutton`).addEventListener("click", () => AsyncCommand.subscribe(
+            `save${str}csvbuttonClick`, false,
+            async (isChanceling) => {
+                if (phase.lessThan(Phase.MotionAnaized)) {
+                    showErrorModal("グラフが表示されるまで待ってください。");
+                }
+                else {
+                    imageAnalyzer.data.downloadCSVData(str);
+                }
+            })
+        );
+
+    });
 });
 
 function updateInputVideo() {
@@ -413,7 +418,7 @@ async function updateMotionAnalyzeAsync() {
 
 async function updateOutputGraphAsync() {
     commonProgressbar.hidden = false;
-    imageAnalyzer.data.getChartX(xtGraphCanvas);
+    imageAnalyzer.data.plotCharts(xtGraphCanvas, vtGraphCanvas);
     commonProgressbar.hidden = true;
 } 
 

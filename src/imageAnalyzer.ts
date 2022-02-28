@@ -214,7 +214,7 @@ export class ImageAnalyzer {
         let storoboCnt = 0;
         this.detector.lastDetectedPoint = undefined;
         const storoboMax = Math.floor(N / 10);
-        data.reset( p.targetHeight);
+        data.resetTXY(p.startTime, p.targetHeight);
         for (let i = 0; i < N; i++,storoboCnt++) {
             barUpdate(i / (N-1));
             const time = p.startTime + (p.endTime - p.startTime) * i / (N - 1);

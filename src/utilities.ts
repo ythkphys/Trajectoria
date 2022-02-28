@@ -6,7 +6,8 @@ export const NUMBER_OF_MAT_FOR_BACKGROUND = 7;
 export const offset = (p: Point, offx: number, offy: number) => new cv.Point(p.x + offx, p.y + offy);
 export const distance2 = (p1: Point, p2: Point) => (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;
 export const centerRect = (r: Rect) => new cv.Point(r.x+r.width/2 , r.y+r.height/2);
-
+export const clamp = (x: number, min: number, max: number) => Math.max(min, Math.min(x, max));
+    
 export type Circle = {
     center: Point,
     radius: number,
