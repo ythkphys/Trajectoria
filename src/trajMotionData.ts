@@ -1,19 +1,19 @@
 import Chart from "../node_modules/chart.js/auto/auto.esm";
+import { Vertex } from "../opencv-ts/src/opencv";
 import { TXY } from "./utilities";
 
-type xy = {x:number,y:number};
+type xy = { x: number, y: number };
+type plotElement = [t:number, x:number, y:number, vx:number, vy:number];
 export class TrajMotionData{
     private startT: number;
     private tatgetH: number;
-    private basicData: TXY[] = [];
-    private vxData: number[] = [];
-    private vyData: number[] = [];
+    private rawData: TXY[] = [];
+    private plotData: plotElement[] = [];
     private chartX: Chart = undefined;
     private chartV: Chart = undefined;
     dispose() {
-        this.basicData = [];
-        this.vxData = [];
-        this.vyData = [];
+        this.rawData = [];
+        this.plotData = [];
         this.chartX?.destroy();
         this.chartV?.destroy();
     }
@@ -25,21 +25,22 @@ export class TrajMotionData{
     }
     
     addTXY([t, x, y]: TXY) {
-        this.basicData.push([t-this.startT,x,this.tatgetH-y]);
+        this.rawData.push([t-this.startT,x,this.tatgetH-y]);
     }
 
     private calcPlotData() { 
+        this.plotData = [];
         const width = 0.15;
-        const basicData = this.basicData;
-        const N = basicData.length;
+        const rawData = this.rawData;
+        const N = rawData.length;
         for (let i = 0; i < N; i++){
             let t0 = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0;
             let x0 = 0, x1 = 0, x2 = 0;
             let y0 = 0, y1 = 0, y2 = 0;
             
-            const ti = basicData[i][0];
+            const [ti, xi, yi] = rawData[i];
             for (let j = 0; j < N; j++){
-                const [t, x, y] = basicData[j];
+                const [t, x, y] = rawData[j];
                 const w = Math.exp(-0.5 * ((t - ti) / width) ** 2);
                 const wt0 = w;
                 const wt1 = wt0 * t;
@@ -70,25 +71,22 @@ export class TrajMotionData{
             const ay = 2 * Ay;
             const vx = (x1 * t0 - x0 * t1) / t20_11;//Bx + ax * ti;
             const vy = (y1 * t0 - y0 * t1) / t20_11;//By + ay * ti;
-            this.vxData.push(vx);
-            this.vyData.push(vy);
+            this.plotData.push([ti, xi, yi, vx, vy]);
         }
     }
 
     
     plotCharts(canvasX: HTMLCanvasElement, canvasV: HTMLCanvasElement ) {
         this.calcPlotData();
-        const basicData = this.basicData;
-        const vxData = this.vxData;
-        const vyData = this.vyData;
-        const N = this.basicData.length;
+        const plotData = this.plotData;
+        const N = plotData.length;
         const graphData: xy[][] = [[],[],[],[]];
         for (let i = 0; i < N; i++) {
-            const [T,X,Y] = basicData[i];
+            const [T,X,Y,VX,VY] = plotData[i];
             graphData[0].push({ x: T, y: X });
             graphData[1].push({ x: T, y: Y });
-            graphData[2].push({ x: T, y: vxData[i] });
-            graphData[3].push({ x: T, y: vyData[i] });
+            graphData[2].push({ x: T, y: VX});
+            graphData[3].push({ x: T, y: VY});
         }
         this.chartX?.destroy();
         this.chartV?.destroy();
@@ -195,8 +193,8 @@ export class TrajMotionData{
 
     downloadCSVData(str:string) {
         let csv_string = str === "X" ?
-            this.basicData.reduce((str, [T, X, Y]) => { return `${str}${T}, ${X}, ${Y}\r\n`; }, "time, x, y\r\n") :
-            undefined;//  this.ddts.reduce((str, [T, VX, VY,,]) => { return `${str}${T}, ${VX}, ${VY}\r\n`; }, "time, x, y\r\n");        
+            this.plotData.reduce((str, [T, X, Y,,]) => { return `${str}${T}, ${X}, ${Y}\r\n`; }, "time, x, y\r\n") :
+            this.plotData.reduce((str, [T,,,VX, VY]) => { return `${str}${T}, ${VX}, ${VY}\r\n`; }, "time, x, y\r\n");        
         const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
         const blob = new Blob([bom, csv_string], { type: "text/csv" });
         const url = URL.createObjectURL(blob);
