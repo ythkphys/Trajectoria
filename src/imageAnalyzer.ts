@@ -206,7 +206,7 @@ export class ImageAnalyzer {
 
     async calcMotionDataAsync(barUpdate: (percent:number) => void) {
         const [p, r, data] = [this.p, this.r, this.data];
-        const N = 101;
+        const N = 501;
         let p1: Point;
         let p2: Point;
 
