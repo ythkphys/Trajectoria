@@ -1,5 +1,4 @@
 import Chart from "../node_modules/chart.js/auto/auto.esm";
-import { Vertex } from "../opencv-ts/src/opencv";
 import { TXY } from "./utilities";
 
 type xy = { x: number, y: number };

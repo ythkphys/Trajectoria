@@ -1,5 +1,4 @@
-import { CovarFlags } from "../opencv-ts/src/core/Core";
-import cv, { Mat, opencv, Scalar, Rect, MatVector, Point,Moments } from "../opencv-ts/src/opencv";
+import cv, { Mat, Scalar, Rect, MatVector, Point,Moments } from "../opencv-ts/src/opencv";
 import { TrajParameter, Resource, DetectType, TXY, Circle, distance2, centerRect, offset} from "./utilities";
 
 export class Detector{

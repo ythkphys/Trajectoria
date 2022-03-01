@@ -3,7 +3,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import * as bootstrap from "bootstrap";
 import { ImageAnalyzer } from "./imageAnalyzer";
 import { MAX_PICTURE_SIZE, DetectType} from "./utilities";
-import cv, { Mat, Rect} from "../opencv-ts/src/opencv";
+import cv from "../opencv-ts/src/opencv";
 
 
 

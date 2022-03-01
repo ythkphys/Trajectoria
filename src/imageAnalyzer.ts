@@ -1,4 +1,4 @@
-import cv, { Mat, opencv ,Point} from "../opencv-ts/src/opencv";
+import cv, { Mat ,Point} from "../opencv-ts/src/opencv";
 import { TrajParameter, Resource, DetectType, debugMsg, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE} from "./utilities";
 import { Detector} from "./detector";
 import { TrajMotionData } from "./trajMotionData";
