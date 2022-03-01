@@ -3,19 +3,19 @@ import cv, { Mat, opencv, Scalar, Rect, MatVector, Point,Moments } from "../open
 import { TrajParameter, Resource, DetectType, TXY, Circle, distance2, centerRect, offset} from "./utilities";
 
 export class Detector{
-    cntColor = new cv.Scalar(128, 255, 0); 
-    srcRBGMat = new cv.Mat();
-    diffMat = new cv.Mat();
-    diffGrayMat1 = new cv.Mat();
-    diffGrayMat2 = new cv.Mat();
-    binaryMat1 = new cv.Mat();
-    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(3, 3), new cv.Point(-1, -1));
-    contours = new cv.MatVector();
-    hierarchy = new cv.Mat();
+    private cntColor = new cv.Scalar(128, 255, 0); 
+    private srcRBGMat = new cv.Mat();
+    private diffMat = new cv.Mat();
+    private diffGrayMat1 = new cv.Mat();
+    private diffGrayMat2 = new cv.Mat();
+    private binaryMat1 = new cv.Mat();
+    private kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(3, 3), new cv.Point(-1, -1));
+    private contours = new cv.MatVector();
+    private hierarchy = new cv.Mat();
     private threahList: number[] = [];
     lastDetectedPoint: Point = undefined;
 
-    protected dispos: Array<Mat|MatVector>; 
+    private dispos: Array<Mat|MatVector>; 
     
     constructor() {
         this.setDetectType("Circle");
