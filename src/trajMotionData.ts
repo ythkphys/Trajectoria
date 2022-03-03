@@ -27,50 +27,46 @@ export class TrajMotionData{
         this.rawData.push([t-this.startT,x,this.tatgetH-y]);
     }
 
-
-    private semi_diff(i: number, sign:(1|-1)){
-        const rawData = this.rawData;
-        const N = rawData.length;
-        const L = Math.floor(N/10);
-        const g = 0.9;
-        if (i + sign * 3 >= rawData.length || i + sign * 3 < 0) {
-            return [undefined, undefined];
-        }
-        else {
-            let m000 = 0, m100 = 0, m200 = 0, m010 = 0, m020 = 0, m110 = 0, m001 = 0, m002 = 0, m101 = 0;
-            let w = g;
+    private calcPlotData() {
+        const semi_diff = (i: number, sign: (1 | -1))=> {
+            const rawData = this.rawData;
+            const N = rawData.length;
+            const L = Math.floor(N / 10);
+            const g = 0.9;
+            
             const rawlist = [];
-            for (let j = 0; j < L && i + sign * j < N && i + sign * j >= 0; j++){
-                rawlist.push(rawData[i+sign*j]);
+            for (let j = 0; j < L && i + sign * j < N && i + sign * j >= 0; j++) {
+                rawlist.push(rawData[i + sign * j]);
             }
-            rawlist.forEach(([t, x, y]) => {
-                m000 += w;
-                m100 += w * t;
-                m200 += w * t * t;
-                m010 += w * x;
-                m020 += w * x * x;
-                m110 += w * t * x;
-                m001 += w * y;
-                m002 += w * y * y;
-                m101 += w * t * y;
-                w *= g;
-            });
-            const D = m200 * m000 - m100 * m100;
-            const Px = (m110 * m000 - m100 * m010) / D;
-            const Qx = (m200 * m010 - m110 * m100) / D;
-            const Rx = m020 - Px * m110 - Qx * m010;
-            const Py = (m101 * m000 - m100 * m001) / D;
-            const Qy = (m200 * m001 - m101 * m100) / D;
-            const Ry = m002 - Py * m101 - Qy * m001;
-            return [[Rx/m000, Px * rawData[i][0] + Qx, Px], [Ry/m000, Py * rawData[i][0] + Qy, Py]];
-        }
-    }
-    private calcPlotData2() {
-        const rawData = this.rawData;
-        const N = rawData.length;
-        this.plotData = rawData.map(([ti, xi, yi], i) => {
-            const [rxvR, ryvR] = this.semi_diff(i, +1);
-            const [rxvL, ryvL] = this.semi_diff(i, -1);
+            if (rawlist.length < 4) return [undefined, undefined];
+            else {
+                let w = g / rawlist.length;
+                let m000 = 0, m100 = 0, m200 = 0, m010 = 0, m020 = 0, m110 = 0, m001 = 0, m002 = 0, m101 = 0;
+                rawlist.forEach(([t, x, y]) => {
+                    m000 += w;
+                    m100 += w * t;
+                    m200 += w * t * t;
+                    m010 += w * x;
+                    m020 += w * x * x;
+                    m110 += w * t * x;
+                    m001 += w * y;
+                    m002 += w * y * y;
+                    m101 += w * t * y;
+                    w *= g;
+                });
+                const D = m200 * m000 - m100 * m100;
+                const Px = (m110 * m000 - m100 * m010) / D;
+                const Qx = (m200 * m010 - m110 * m100) / D;
+                const Rx = m020 - Px * m110 - Qx * m010;
+                const Py = (m101 * m000 - m100 * m001) / D;
+                const Qy = (m200 * m001 - m101 * m100) / D;
+                const Ry = m002 - Py * m101 - Qy * m001;
+                return [[Rx / m000, Px * rawlist[0][0] + Qx, Px], [Ry / m000, Py * rawlist[0][0] + Qy, Py]];
+            }
+        };
+        this.plotData = this.rawData.map(([ti, xi, yi], i) => {
+            const [rxvR, ryvR] = semi_diff(i, +1);
+            const [rxvL, ryvL] = semi_diff(i, -1);
             let vx=undefined, vy=undefined;
             if (rxvR && rxvL) {
                 const divX = rxvR[0] + rxvL[0];
@@ -91,55 +87,9 @@ export class TrajMotionData{
             return [ti, xi, yi, vx, vy];
         });
     }
-
-    private calcPlotData() { 
-        const width = 0.15;
-        const rawData = this.rawData;
-        const N = rawData.length;
-        this.plotData = rawData.map(([ti, xi, yi]) => {
-            let t0 = 0, t1 = 0, t2 = 0, t3 = 0, t4 = 0;
-            let x0 = 0, x1 = 0, x2 = 0;
-            let y0 = 0, y1 = 0, y2 = 0;
-            for (let j = 0; j < N; j++) {
-                const [t, x, y] = rawData[j];
-                const w = Math.exp(-0.5 * ((t - ti) / width) ** 2);
-                const wt0 = w;
-                const wt1 = wt0 * t;
-                const wt2 = wt1 * t;
-                const wt3 = wt2 * t;
-                const wt4 = wt3 * t;
-                t0 += wt0;
-                t1 += wt1;
-                t2 += wt2;
-                t3 += wt3;
-                t4 += wt4;
-                x0 += wt0 * x;
-                x1 += wt1 * x;
-                x2 += wt2 * x;
-                y0 += wt0 * y;
-                y1 += wt1 * y;
-                y2 += wt2 * y;
-            }
-
-            const t40_22 = t4 * t0 - t2 * t2;
-            const t20_11 = t2 * t0 - t1 * t1;
-            const t30_21 = t3 * t0 - t2 * t1;
-            const D = t40_22 * t20_11 - t30_21 * t30_21;
-            const Ax = ((x2 * t0 - x0 * t2) * t20_11 - (x1 * t0 - x0 * t1) * t30_21) / D;
-            const Bx = ((x1 * t0 - x0 * t1) * t40_22 - (x2 * t0 - x0 * t2) * t30_21) / D;
-            const Ay = ((y2 * t0 - y0 * t2) * t20_11 - (y1 * t0 - y0 * t1) * t30_21) / D;
-            const By = ((y1 * t0 - y0 * t1) * t40_22 - (y2 * t0 - y0 * t2) * t30_21) / D;
-            const ax = 2 * Ax;
-            const ay = 2 * Ay;
-            const vx = (x1 * t0 - x0 * t1) / t20_11;//Bx + ax * ti;
-            const vy = (y1 * t0 - y0 * t1) / t20_11;//By + ay * ti;
-            return [ti, xi, yi, vx, vy];
-         });
-    }
-
     
     plotCharts(canvasX: HTMLCanvasElement, canvasV: HTMLCanvasElement ) {
-        this.calcPlotData2();
+        this.calcPlotData();
         const plotData = this.plotData;
         const N = plotData.length;
         const graphData: xy[][] = [[],[],[],[]];
@@ -152,23 +102,20 @@ export class TrajMotionData{
         }
         this.chartX?.destroy();
         this.chartV?.destroy();
-
-        this.chartX = new Chart(canvasX, {
+        const createChart = (taget_canvas: HTMLCanvasElement, title: string, ytext: string, xdata: xy[], ydata: xy[]) => new Chart(taget_canvas, {
             type: "scatter",
             data: {
-                datasets: [
-                    {
+                datasets: [{
                         label: "横成分",
-                        data: graphData[0],
+                        data: xdata,
                         showLine: true,
                         borderColor: 'rgb(255, 99, 132)',
                         backgroundColor: 'rgba(255, 99, 132, 0.5)',
                         pointRadius: 0,
                         tension: 0.4,
-                    },
-                    {
+                    },{
                         label: "縦成分",
-                        data: graphData[1],
+                        data: ydata,
                         showLine: true,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.5)',
@@ -182,75 +129,19 @@ export class TrajMotionData{
                 scales: {
                     x: {
                         beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: "時間 [s]",
-                        }
+                        title: { display: true, text: "時間 [s]",}
                     },
                     y: {
-                        title: {
-                            display: true,
-                            text: "位置 [px]",
-                        }
+                        title: {display: true, text: ytext,}
                     },
                 },
                 plugins: {
-                    title: {
-                        display: true,
-                        text: "位置の時間変化"
-                    }
+                    title: { display: true, text: title,}
                 }
             }
         });
-        this.chartV = new Chart(canvasV, {
-            type: "scatter",
-            data: {
-                datasets: [
-                    {
-                        label: "横成分",
-                        data: graphData[2],
-                        showLine: true,
-                        borderColor: 'rgb(255, 99, 132)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        pointRadius: 0,
-                        tension: 0.4,
-                    },
-                    {
-                        label: "縦成分",
-                        data: graphData[3],
-                        showLine: true,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                        pointRadius: 0,
-                        tension: 0.4,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: "時間 [s]",
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: "速度 [px/s]",
-                        }
-                    },
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: "速度の時間変化"
-                    }
-                }
-            }
-        });
+        this.chartX = createChart(canvasX, "位置の時間変化", "位置 [px]", graphData[0], graphData[1]);
+        this.chartV = createChart(canvasV, "速度の時間変化", "速度 [px/s]", graphData[2], graphData[3]);
     }
 
     downloadCSVData(str:string) {
