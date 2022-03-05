@@ -1,8 +1,7 @@
-import cv, { Mat, Scalar, Rect, MatVector, Point,Moments } from "../opencv-ts/src/opencv";
-import { TrajParameter, Resource, DetectType, TXY, Circle, distance2, centerRect, offset} from "./utilities";
+import cv, { Mat, Rect, MatVector, Point, Moments } from "../opencv-ts/src/opencv";
+import { TrajParameter, Resource, DetectType, TXY, Circle, Color, distance2, centerRect, offset} from "./utilities";
 
 export class Detector{
-    private cntColor = new cv.Scalar(128, 255, 0); 
     private srcRBGMat = new cv.Mat();
     private diffMat = new cv.Mat();
     private diffGrayMat1 = new cv.Mat();
@@ -79,8 +78,8 @@ export class Detector{
         let enkei = 0;
         let circle: Circle;
         let countour: Mat;
-        const radiusMinThresh = 5;
-        const maxDistanceToDetect = 30;
+        const radiusMinThresh = p.radiusMinThresh;
+        const maxDistanceToDetect = p.maxDistanceToDetect;
         for (let i = 0; i < this.contours.size(); i++) {
             const cnt = this.contours.get(i);
             const length = cv.arcLength(cnt, true);
@@ -99,16 +98,16 @@ export class Detector{
             }
         }
         r.srcROI.copyTo(r.detectedROI);
-        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), new cv.Scalar(0), cv.FILLED);
+        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), Color.MaskBlack, cv.FILLED);
 
         if (countour) {
             const offX = p.region.x;
             const offY = p.region.y;
             const center = circle.center
-            cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), this.cntColor, 1);
-            cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x,p.region.height), this.cntColor, 1);
-            cv.circle(r.detectedROI, center, circle.radius, this.cntColor, 1);
-            cv.circle(r.objectMask, offset(center, offX, offY), circle.radius, new cv.Scalar(255), cv.FILLED);
+            cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), Color.Object, 1);
+            cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), Color.Object, 1);
+            cv.circle(r.detectedROI, center, circle.radius, Color.Object, 1);
+            cv.circle(r.objectMask, offset(center, offX, offY), circle.radius, Color.MaskWhite, cv.FILLED);
             this.lastDetectedPoint = detectOnlyNear ? center : undefined;
             return [time, center.x + offX, center.y + offY];
         }
@@ -118,11 +117,11 @@ export class Detector{
         }
     }
     contoursAnalyzeSquare(p: TrajParameter, r: Resource, time: number, detectOnlyNear: boolean): TXY {
-       let hiseihou = 10;
+        let hiseihou = 10;
         let boundingRect: Rect;
         let countour: Mat;
-        const radiusMinThresh = 10;
-        const maxDistanceToDetect = 30;
+        const radiusMinThresh = p.radiusMinThresh;
+        const maxDistanceToDetect = p.maxDistanceToDetect;
         for (let i = 0; i < this.contours.size(); i++) {
             const cnt = this.contours.get(i);
             const area = cv.contourArea(cnt);
@@ -140,7 +139,7 @@ export class Detector{
             }
         }
         r.srcROI.copyTo(r.detectedROI);
-        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), new cv.Scalar(0), cv.FILLED);
+        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), Color.MaskBlack, cv.FILLED);
 
         if (countour) {
             const offX = p.region.x;
@@ -148,10 +147,10 @@ export class Detector{
             const center = centerRect(boundingRect);
             const p1 = new cv.Point(boundingRect.x, boundingRect.y);
             const p2 = offset(p1, boundingRect.width, boundingRect.height);
-            cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), this.cntColor, 1);
-            cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), this.cntColor, 1);
-            cv.rectangle(r.detectedROI, p1, p2, this.cntColor, 1);
-            cv.rectangle(r.detectedBinaryROI, offset(p1, offX, offY), offset(p1, offX, offY), new cv.Scalar(255), cv.FILLED);
+            cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), Color.Object, 1);
+            cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), Color.Object, 1);
+            cv.rectangle(r.detectedROI, p1, p2, Color.Object, 1);
+            cv.rectangle(r.detectedBinaryROI, offset(p1, offX, offY), offset(p1, offX, offY), Color.MaskWhite, cv.FILLED);
             this.lastDetectedPoint = detectOnlyNear ? center : undefined;
             return [time, center.x + offX, center.y + offY];
         }
@@ -165,8 +164,8 @@ export class Detector{
         let moment: Moments;
         let area = 0;
         let countour: Mat;
-        const radiusMinThresh = 5;
-        const maxDistanceToDetect = 30;
+        const radiusMinThresh = p.radiusMinThresh;
+        const maxDistanceToDetect = p.maxDistanceToDetect;
         for (let i = 0; i < this.contours.size(); i++) {
             const cnt = this.contours.get(i);
             const mo = cv.moments(cnt);
@@ -184,16 +183,16 @@ export class Detector{
             }
         }
         r.srcROI.copyTo(r.detectedROI);
-        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), new cv.Scalar(0), cv.FILLED);
+        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), Color.MaskWhite, cv.FILLED);
 
         if (countour) {
             const offX = p.region.x;
             const offY = p.region.y;
             const center = new cv.Point(moment.m10 / area, moment.m01 / area);
-            cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), this.cntColor, 1);
-            cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), this.cntColor, 1);
-            cv.drawContours(r.detectedROI, this.contours, index, this.cntColor, 1);
-            cv.drawContours(r.detectedBinaryROI, this.contours, index, new cv.Scalar(255), cv.FILLED, cv.LINE_8, this.hierarchy, 1, new cv.Point(offX, offY));
+            cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), Color.Object, 1);
+            cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), Color.Object, 1);
+            cv.drawContours(r.detectedROI, this.contours, index, Color.Object, 1);
+            cv.drawContours(r.detectedBinaryROI, this.contours, index, Color.MaskWhite, cv.FILLED, cv.LINE_8, this.hierarchy, 1, new cv.Point(offX, offY));
             this.lastDetectedPoint = detectOnlyNear ? center : undefined;
             return [time, center.x + offX, center.y + offY];
         }

@@ -2,7 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import * as bootstrap from "bootstrap";
 import { ImageAnalyzer } from "./imageAnalyzer";
-import { MAX_PICTURE_SIZE, DetectType} from "./utilities";
+import { MAX_PICTURE_SIZE, DetectType, Color} from "./utilities";
 import cv from "../opencv-ts/src/opencv";
 
 
@@ -32,6 +32,13 @@ let checkThreshInput:HTMLInputElement;
 let rangeThreshText: HTMLElement;
 let rangeCurrentTimeInput: HTMLInputElement;
 let rangeCurrentTimeText: HTMLElement;
+let rangeRadiusMinThreshInput: HTMLInputElement;
+let rangeTrajNumInput: HTMLInputElement;
+let rangeStoroboNumInput: HTMLInputElement;
+let rangeRadiusMinThreshText: HTMLElement;
+let rangeTrajNumText: HTMLElement;
+let rangeStoroboNumText: HTMLElement;
+
 
 const rangeInput: { [str: string]: HTMLInputElement } = {};
 const rangeText: { [str: string]: HTMLElement } = {};
@@ -100,6 +107,12 @@ window.addEventListener('DOMContentLoaded', () => {
     rangeThreshText = document.getElementById("rangeThreshText");
     rangeCurrentTimeInput = document.getElementById("rangeCurrentTimeInput") as HTMLInputElement;
     rangeCurrentTimeText = document.getElementById("rangeCurrentTimeText");
+    rangeRadiusMinThreshInput = document.getElementById("rangeRadiusMinThreshInput") as HTMLInputElement;
+    rangeTrajNumInput = document.getElementById("rangeTrajNumInput")  as  HTMLInputElement;
+    rangeStoroboNumInput = document.getElementById("rangeStoroboNumInput") as HTMLInputElement;
+    rangeRadiusMinThreshText = document.getElementById("rangeRadiusMinThreshText") ;
+    rangeTrajNumText = document.getElementById("rangeTrajNumText");
+    rangeStoroboNumText = document.getElementById("rangeStoroboNumText");
    
     ["Up", "Down", "Left", "Right"].forEach(str => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
@@ -135,7 +148,7 @@ window.addEventListener('load', () => {
             ctx.moveTo(x2, 0); ctx.lineTo(x2, h);
             ctx.moveTo(0, y1); ctx.lineTo(w, y1);
             ctx.moveTo(0, y2); ctx.lineTo(w, y2);
-            ctx.strokeStyle = "#3F3";
+            ctx.strokeStyle = Color.ROI_CSS;
             ctx.lineWidth = 3;
             ctx.stroke();
         });
@@ -143,11 +156,11 @@ window.addEventListener('load', () => {
 
 
     /* tab event*/
-    [videoInputTabButton, adjustParametersTabButton, motionAnalyzeTabButton /*,outputGraphTabButton */].forEach(button => {
+    [videoInputTabButton, adjustParametersTabButton, motionAnalyzeTabButton,outputGraphTabButton].forEach(button => {
         button.addEventListener("hide.bs.tab", (e) => AsyncCommand.subscribe(
             "HideTab", false,
             async (isChanceling) => { },
-            () => { e.preventDefault() }
+            e.preventDefault
         ))
     });
     
@@ -242,8 +255,8 @@ window.addEventListener('load', () => {
         "rangeThreshInputChange", true,
         async (isChanceling) => {
             const value = rangeThreshInput.value;
-            rangeThreshText.textContent = value
             const changed = imageAnalyzer.setThresh(parseInt(value), checkThreshInput.checked);
+            rangeThreshText.textContent = value
             if (changed) {
                 phase.reduceTo(Phase.BackgroundDetected);
                 if (phase.equalsTo(Phase.BackgroundDetected)) {
@@ -272,8 +285,8 @@ window.addEventListener('load', () => {
         "rangeCurrentTimeInputChange", false,
         async (isChanceling) => {
             const value = parseFloat(rangeCurrentTimeInput.value);
-            rangeCurrentTimeText.textContent = `${value.toFixed(2)} s`;
             const changed = await imageAnalyzer.setCurrentTimeAsync(value);
+            rangeCurrentTimeText.textContent = `${value.toFixed(2)} s`;
             if (changed) {
                 phase.reduceTo(Phase.BackgroundDetected);
                 if (phase.equalsTo(Phase.BackgroundDetected)) {
@@ -295,6 +308,44 @@ window.addEventListener('load', () => {
             }
         ))
     });
+    rangeRadiusMinThreshInput.addEventListener("change", (e) => AsyncCommand.subscribe(
+        "rangeRadiusMinThreshInputChange", true,
+        async (isChanceling) => {
+            const value = parseInt(rangeRadiusMinThreshInput.value);
+            const changed = imageAnalyzer.setRadiusMinThresh(value);
+            rangeRadiusMinThreshText.textContent = value.toString();
+            if (changed) {
+                phase.reduceTo(Phase.BackgroundDetected);
+                if (phase.equalsTo(Phase.BackgroundDetected)) {
+                    await updateAdjustParametersAsync();
+                }
+            }
+        })
+    );
+
+    rangeStoroboNumInput.addEventListener("input", (e) => AsyncCommand.subscribe(
+        "rangeStoroboNumInput", true,
+        async (isChanceling) => {
+            const value = parseInt(rangeStoroboNumInput.value);
+            const changed = imageAnalyzer.setStoroboNum(value);
+            rangeStoroboNumText.textContent = value.toString();
+            if (changed) {
+                phase.reduceTo(Phase.ObjectMasked);
+            }
+        })
+    );
+    rangeTrajNumInput.addEventListener("input", (e) => AsyncCommand.subscribe(
+        "rangeTrajNumInput", true,
+        async (isChanceling) => {
+            const value = parseInt(rangeTrajNumInput.value);
+            const changed = imageAnalyzer.setTrajNum(value);
+            rangeTrajNumText.textContent = value.toString();
+            if (changed) {
+                phase.reduceTo(Phase.ObjectMasked);
+            }
+        })
+    );
+
     /* motionAnalyzeEvent */
     /* outputGraphEvent */
     ["X", "V"].forEach(str => { 
@@ -377,6 +428,13 @@ async function updateAdjustParametersAsync() {
         rangeThreshText.textContent = imageAnalyzer.p.threshold.toString();
         rangeThreshInput.value = imageAnalyzer.p.threshold.toString();
     }
+    rangeRadiusMinThreshInput.value = imageAnalyzer.p.radiusMinThresh.toString();
+    rangeRadiusMinThreshText.textContent = rangeRadiusMinThreshInput.value;
+    rangeStoroboNumInput.value = imageAnalyzer.p.storoboNumber.toString();
+    rangeStoroboNumText.textContent = rangeStoroboNumInput.value;
+    rangeTrajNumInput.value = imageAnalyzer.p.trajectoryNumber.toString();
+    rangeTrajNumText.textContent = rangeTrajNumInput.value;
+
 
     if (phase.lessThan(Phase.BackgroundDetected)) {
         await imageAnalyzer.calcBackgroundAsync(barUpdate).then(() => {

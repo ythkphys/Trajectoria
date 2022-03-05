@@ -23,16 +23,16 @@ export class TrajMotionData{
         this.tatgetH = targetH;
     }
     
-    addTXY([t, x, y]: TXY) {
+    addTXY([t, x, y]: TXY) :void{
         this.rawData.push([t-this.startT,x,this.tatgetH-y]);
     }
 
-    private calcPlotData() {
+    private calcPlotData():void{
         const semi_diff = (i: number, sign: (1 | -1))=> {
             const rawData = this.rawData;
             const N = rawData.length;
             const L = Math.floor(N / 10);
-            const g = 0.9;
+            const g = 0.8;
             
             const rawlist = [];
             for (let j = 0; j < L && i + sign * j < N && i + sign * j >= 0; j++) {

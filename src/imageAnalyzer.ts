@@ -1,5 +1,5 @@
 import cv, { Mat ,Point} from "../opencv-ts/src/opencv";
-import { TrajParameter, Resource, DetectType, debugMsg, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE} from "./utilities";
+import { TrajParameter, Resource, DetectType, Color, debugMsg, NUMBER_OF_MAT_FOR_BACKGROUND, MAX_PICTURE_SIZE} from "./utilities";
 import { Detector} from "./detector";
 import { TrajMotionData } from "./trajMotionData";
 
@@ -10,7 +10,15 @@ export class ImageAnalyzer {
     detector: Detector;
 
     private constructor(video: HTMLVideoElement) {
-        this.p = { videoElement: video, threshold:5, autoThreshold:true};
+        this.p = {
+            videoElement: video,
+            threshold: 5,
+            autoThreshold: true,
+            trajectoryNumber: 301,
+            storoboNumber: 15,
+            maxDistanceToDetect: 30,
+            radiusMinThresh :10,
+        };
         this.r = {};
         this.data = new TrajMotionData(); 
         this.detector = new Detector();
@@ -141,6 +149,22 @@ export class ImageAnalyzer {
         this.detector.setDetectType(detectType);
     }
 
+    setRadiusMinThresh(radius: number) {
+        const oldRadius = this.p.radiusMinThresh;
+        this.p.radiusMinThresh = radius;
+        return this.p.radiusMinThresh!== oldRadius;   
+    }
+    setTrajNum(trajNum: number) {
+        const oldTrajNum = this.p.trajectoryNumber;
+        this.p.trajectoryNumber = trajNum;
+        return this.p.trajectoryNumber !== oldTrajNum;
+    }
+    setStoroboNum(storoboNum: number) {
+        const oldStoroboNum = this.p.storoboNumber;
+        this.p.storoboNumber = storoboNum;
+        return this.p.storoboNumber!== oldStoroboNum;
+    }
+
     validateVideoInput(): string{
         if (this.r.cap == null) return "ビデオが正しく読み込まれていません。";
         else if (this.p.startTime >= this.p.endTime) return "「開始」は「終了」よりも小さい必要があります。"; 
@@ -206,14 +230,14 @@ export class ImageAnalyzer {
 
     async calcMotionDataAsync(barUpdate: (percent:number) => void) {
         const [p, r, data] = [this.p, this.r, this.data];
-        const N = 501;
+        const N = p.trajectoryNumber;
         let p1: Point;
         let p2: Point;
 
         let needInit = true;
         let storoboCnt = 0;
         this.detector.lastDetectedPoint = undefined;
-        const storoboMax = Math.floor(N / 10);
+        const storoboMax = Math.floor(N / p.storoboNumber);
         data.resetTXY(p.startTime, p.targetHeight);
         for (let i = 0; i < N; i++,storoboCnt++) {
             barUpdate(i / (N-1));
@@ -233,7 +257,7 @@ export class ImageAnalyzer {
                 else {
                     p1 = p2;
                     p2 = new cv.Point(x, y);
-                    cv.line(r.trajectoryMat, p1, p2, new cv.Scalar(255, 0, 255, 255),3);
+                    cv.line(r.trajectoryMat, p1, p2, Color.Trajectory,3);
                     if (storoboCnt >= storoboMax) {
                         storoboCnt = 0;
                         r.srcMat.copyTo(r.storoboMat, r.objectMask);
