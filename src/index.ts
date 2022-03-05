@@ -38,7 +38,7 @@ let rangeStoroboNumInput: HTMLInputElement;
 let rangeRadiusMinThreshText: HTMLElement;
 let rangeTrajNumText: HTMLElement;
 let rangeStoroboNumText: HTMLElement;
-
+let detectRateText: HTMLElement;
 
 const rangeInput: { [str: string]: HTMLInputElement } = {};
 const rangeText: { [str: string]: HTMLElement } = {};
@@ -113,11 +113,13 @@ window.addEventListener('DOMContentLoaded', () => {
     rangeRadiusMinThreshText = document.getElementById("rangeRadiusMinThreshText") ;
     rangeTrajNumText = document.getElementById("rangeTrajNumText");
     rangeStoroboNumText = document.getElementById("rangeStoroboNumText");
-   
+    detectRateText = document.getElementById("detectRateText");
     ["Up", "Down", "Left", "Right"].forEach(str => {
         rangeInput[str] = document.getElementById(`range${str}Input`) as HTMLInputElement;
         rangeText[str] = document.getElementById(`range${str}Text`) as HTMLElement;
     });
+
+    
     document.getElementById("page").hidden = false;
     document.getElementById("loading-wrapper").hidden = true;
 });
@@ -462,12 +464,15 @@ async function updateMotionAnalyzeAsync() {
     const barUpdate = (p: number) => commonProgressbar.style.width = (p * 100).toFixed() + "%";
     barUpdate(0);
 
+    detectRateText.textContent = "";
     storoboCanvas.getContext("2d").clearRect(0, 0, storoboCanvas.width, storoboCanvas.height);
     trajectoryCanvas.getContext("2d").clearRect(0, 0, trajectoryCanvas.width, trajectoryCanvas.height);
 
-    await imageAnalyzer.calcMotionDataAsync(barUpdate).then(() => {
+    await imageAnalyzer.calcMotionDataAsync(barUpdate).then((detectRate) => {
+        detectRateText.textContent = `検出率:${Math.round(detectRate*100)}%`;
         cv.imshow(storoboCanvas, imageAnalyzer.r.storoboMat);
         cv.imshow(trajectoryCanvas, imageAnalyzer.r.trajectoryMat);
+        
     }).then(() => {
         phase.changeTo(Phase.MotionAnaized);
         commonProgressbar.hidden = true;

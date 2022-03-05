@@ -228,7 +228,7 @@ export class ImageAnalyzer {
        if (this.p.autoThreshold) this.p.threshold = this.detector.getAvgThresh();
     }
 
-    async calcMotionDataAsync(barUpdate: (percent:number) => void) {
+    async calcMotionDataAsync(barUpdate: (percent:number) => void) :Promise<number>{
         const [p, r, data] = [this.p, this.r, this.data];
         const N = p.trajectoryNumber;
         let p1: Point;
@@ -236,6 +236,7 @@ export class ImageAnalyzer {
 
         let needInit = true;
         let storoboCnt = 0;
+        let detectCnt = 0;
         this.detector.lastDetectedPoint = undefined;
         const storoboMax = Math.floor(N / p.storoboNumber);
         data.resetTXY(p.startTime, p.targetHeight);
@@ -246,6 +247,7 @@ export class ImageAnalyzer {
             r.cap.read(r.srcMat);
             const txy = this.detector.detectOne(p, r, time, true);
             if (txy) {
+                detectCnt++;
                 const [t, x, y] = txy;
                 data.addTXY(txy);
                 if (needInit) {
@@ -265,5 +267,6 @@ export class ImageAnalyzer {
                 }
             }
         }
+         return  detectCnt / N;
     }
 }
