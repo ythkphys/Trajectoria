@@ -128,6 +128,10 @@ window.addEventListener('load', () => {
     phase.changeTo(Phase.VideoNotLoaded);
     updateInputVideo();
 
+   // (document.querySelectorAll('[data-bs-toggle="tooltip"]')).forEach((tooltipTriggerEl:HTMLElement) => { 
+    //    new bootstrap.Tooltip(tooltipTriggerEl);
+    //});
+
     ["Up", "Down", "Left", "Right"].forEach(str => {
         rangeInput[str].addEventListener("input", (e) => {
             ["Up", "Down", "Left", "Right"].forEach(s => {

@@ -14,7 +14,7 @@ export class ImageAnalyzer {
             videoElement: video,
             threshold: 5,
             autoThreshold: true,
-            trajectoryNumber: 301,
+            trajectoryNumber: 100,
             storoboNumber: 15,
             maxDistanceToDetect: 30,
             radiusMinThresh :10,

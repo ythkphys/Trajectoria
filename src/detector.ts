@@ -150,7 +150,7 @@ export class Detector{
             cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), Color.Object, 1);
             cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), Color.Object, 1);
             cv.rectangle(r.detectedROI, p1, p2, Color.Object, 1);
-            cv.rectangle(r.detectedBinaryROI, offset(p1, offX, offY), offset(p1, offX, offY), Color.MaskWhite, cv.FILLED);
+            cv.rectangle(r.objectMask, offset(p1, offX, offY), offset(p2, offX, offY), Color.MaskWhite, cv.FILLED);
             this.lastDetectedPoint = detectOnlyNear ? center : undefined;
             return [time, center.x + offX, center.y + offY];
         }
@@ -183,7 +183,7 @@ export class Detector{
             }
         }
         r.srcROI.copyTo(r.detectedROI);
-        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), Color.MaskWhite, cv.FILLED);
+        cv.rectangle(r.objectMask, new cv.Point(0, 0), new cv.Point(p.targetWidth, p.targetHeight), Color.MaskBlack, cv.FILLED);
 
         if (countour) {
             const offX = p.region.x;
@@ -192,7 +192,7 @@ export class Detector{
             cv.line(r.detectedROI, new cv.Point(0, center.y), new cv.Point(p.region.width, center.y), Color.Object, 1);
             cv.line(r.detectedROI, new cv.Point(center.x, 0), new cv.Point(center.x, p.region.height), Color.Object, 1);
             cv.drawContours(r.detectedROI, this.contours, index, Color.Object, 1);
-            cv.drawContours(r.detectedBinaryROI, this.contours, index, Color.MaskWhite, cv.FILLED, cv.LINE_8, this.hierarchy, 1, new cv.Point(offX, offY));
+            cv.drawContours(r.objectMask, this.contours, index, Color.MaskWhite, cv.FILLED, cv.LINE_8, this.hierarchy, 1, new cv.Point(offX, offY));
             this.lastDetectedPoint = detectOnlyNear ? center : undefined;
             return [time, center.x + offX, center.y + offY];
         }
