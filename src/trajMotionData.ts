@@ -88,7 +88,7 @@ export class TrajMotionData{
         });
     }
     
-    plotCharts(canvasX: HTMLCanvasElement, canvasV: HTMLCanvasElement ) {
+    plotCharts(canvasX: HTMLCanvasElement, canvasV: HTMLCanvasElement) {
         this.calcPlotData();
         const plotData = this.plotData;
         const N = plotData.length;

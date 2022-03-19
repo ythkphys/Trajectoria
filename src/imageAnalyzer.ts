@@ -267,6 +267,6 @@ export class ImageAnalyzer {
                 }
             }
         }
-         return  detectCnt / N;
+        return  detectCnt / N;
     }
 }
